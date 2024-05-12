@@ -1,5 +1,3 @@
-"use server";
-
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import type { Vote, PostUser, User } from "@prisma/client";
@@ -24,12 +22,19 @@ const VoteResult = () => {
   const user = session.data?.user?.name;
   const [results, setResults] = useState<Post[]>([]);
   const [loadingFlag, setLoadingFlag] = useState(false);
+
   useEffect(() => {
     async function getResult() {
-      const post = await fetch("api/voteResult");
-      const data = await post.json();
-      setResults(data);
-      setLoadingFlag(!loadingFlag);
+      setLoadingFlag(true); // リクエストを開始する前にloadingFlagをtrueに設定
+      try {
+        const post = await fetch("api/voteResult");
+        const data = await post.json();
+        setResults(data);
+      } catch (error) {
+        console.error("Error fetching vote results:", error);
+      } finally {
+        setLoadingFlag(false); // リクエストが完了したらloadingFlagをfalseに設定
+      }
     }
     getResult();
   }, [user]); // user が変更されたときにのみ useEffect が再実行される
