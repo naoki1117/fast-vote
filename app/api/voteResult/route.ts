@@ -11,7 +11,7 @@ export const GET = async () => {
       },
     },
   });
-
+  //
   // 投稿ごとにフォロワー数をカウントし、上位5番目までの投稿を抽出
   const top5Posts = posts
     .map((post) => ({
