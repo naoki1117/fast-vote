@@ -1,11 +1,19 @@
+// import { nextAuthOptions } from "@/app/lib/next-auth/options";
+// import NextAuth from "next-auth/next";
+
+// const handler = NextAuth(nextAuthOptions);
+
+// export { handler as GET, handler as POST };
+
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { NextAuthOptions, User } from "next-auth";
+import { Awaitable, NextAuthOptions, RequestInternal, User } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import prisma from "../../../lib/prisma";
 import { UserType } from "@/app/types/types";
+
 import NextAuth from "next-auth/next";
 
-const handler = NextAuth({
+export const nextAuthOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
 
   providers: [
@@ -30,7 +38,6 @@ const handler = NextAuth({
           return null;
         }
 
-        // ユーザーが見つかった場合はユーザーオブジェクトを返す
         return user ? user : null;
       },
     }),
@@ -41,6 +48,8 @@ const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
 
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
 
-export default handler;
+const handler = NextAuth(nextAuthOptions);
+
+export { handler as GET, handler as POST };
