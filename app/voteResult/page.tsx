@@ -1,6 +1,9 @@
+"use client";
+
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import type { Vote, PostUser, User } from "@prisma/client";
+import Link from "next/link";
 
 export type ExtendedPost = {
   id: string;
@@ -58,6 +61,7 @@ const page = () => {
           </p>
         </div>
       ))}
+      <Link href={"/dashboard"}>←戻る</Link>
     </div>
   );
 };
