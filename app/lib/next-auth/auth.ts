@@ -1,12 +1,5 @@
-// import { nextAuthOptions } from "@/app/lib/next-auth/options";
-// import NextAuth from "next-auth/next";
-
-// const handler = NextAuth(nextAuthOptions);
-
-// export { handler as GET, handler as POST };
-
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Awaitable, NextAuthOptions, RequestInternal, User } from "next-auth";
+import { NextAuthOptions, User } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import prisma from "../prisma";
 import { UserType } from "@/app/types/types";
@@ -50,7 +43,6 @@ export const nextAuthOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const handler = NextAuth(nextAuthOptions);
+// const { handlers, auth, signIn, signOut } = NextAuth(nextAuthOptions);
 
-// export { handler as GET, handler as POST };
-export const { handlers, auth, signIn, signOut } = NextAuth(nextAuthOptions);
+// export { handlers, auth, signIn, signOut };
