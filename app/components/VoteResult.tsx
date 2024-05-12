@@ -24,7 +24,7 @@ const VoteResult = () => {
   useEffect(() => {
     async function getResult() {
       try {
-        const post = await fetch("api/voteResult");
+        const post = await fetch("api/voteResult", { cache: "no-store" });
         if (!post.ok) {
           throw new Error("Failed to fetch data");
         }
