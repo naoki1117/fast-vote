@@ -1,4 +1,4 @@
-// "use client";
+"use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
@@ -8,17 +8,17 @@ import VoteResult from "../components/VoteResult";
 import { useRouter } from "next/navigation"; // useRouter を import
 
 const Page = () => {
-  // const router = useRouter();
+  const router = useRouter();
   const { data: session, status } = useSession();
   const user = session?.user;
   const loading = status === "loading";
 
-  // // セッションがない場合にTOPページにリダイレクトする
-  // useEffect(() => {
-  //   if (!loading && !session) {
-  //     router.push("/");
-  //   }
-  // }, [loading, session, router]);
+  // セッションがない場合にTOPページにリダイレクトする
+  useEffect(() => {
+    if (!loading && !session) {
+      router.push("/");
+    }
+  }, [loading, session, router]);
 
   const [toggleComponent, setToggleComponent] = useState({
     myVote: false,
