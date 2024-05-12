@@ -41,16 +41,17 @@ const VoteResult = () => {
   }
   getResult();
 
-  if (!results) {
-    return <div>Loading...</div>;
-  }
   return (
     <div className="max-w-4xl mx-auto mt-10">
-      <div className="text-center">
-        <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white py-2 px-4 rounded-full inline-block shadow-lg">
-          <h1 className="text-3xl font-bold"> TOP 5 </h1>
+      {!results ? (
+        <div>Loading...</div>
+      ) : (
+        <div className="text-center">
+          <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white py-2 px-4 rounded-full inline-block shadow-lg">
+            <h1 className="text-3xl font-bold"> TOP 5 </h1>
+          </div>
         </div>
-      </div>
+      )}
 
       {results.map((data: Post) => (
         <div
