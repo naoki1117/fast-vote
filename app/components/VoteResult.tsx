@@ -18,6 +18,7 @@ type Post = ExtendedPost;
 const VoteResult = () => {
   const [results, setResults] = useState<Post[]>([]);
   const { data: session, status } = useSession();
+  const [loading, setLoading] = useState(true); // ローディング状態を管理する
   const name = session?.user;
 
   async function getResult() {
@@ -28,7 +29,6 @@ const VoteResult = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(name),
-        cache: "no-store",
       });
       if (!post.ok) {
         throw new Error("Failed to fetch data");
@@ -39,16 +39,22 @@ const VoteResult = () => {
       console.error("Error fetching vote results:", error);
     }
     console.log("test");
+    setLoading(false);
   }
   getResult();
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
-      <div className="text-center">
-        <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white py-2 px-4 rounded-full inline-block shadow-lg">
-          <h1 className="text-3xl font-bold"> TOP 5 </h1>
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <div className="text-center">
+          <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white py-2 px-4 rounded-full inline-block shadow-lg">
+            <h1 className="text-3xl font-bold"> TOP 5 </h1>
+          </div>
         </div>
-      </div>
+      )}
+
       {results.map((data: Post) => (
         <div
           key={data.id}
