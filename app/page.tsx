@@ -1,4 +1,4 @@
-// "use client";
+"use client";
 
 import { getProviders } from "next-auth/react";
 import SignInButton from "./components/SignInButton";
