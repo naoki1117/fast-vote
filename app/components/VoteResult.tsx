@@ -66,7 +66,7 @@ const VoteResult = () => {
           <h2 className="text-xl font-semibold">{data.title}</h2>
           <p className="text-gray-600 underline">
             投票数: <span className="text-3xl">{data.followers.length}</span>
-            <span className="text-end">
+            <span className="text-end cursor-pointer">
               <details>
                 <summary> 投票者:</summary>
                 {data.followers.map((follower) => (
