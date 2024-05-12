@@ -2,37 +2,43 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import type { Vote, PostUser, User } from "@prisma/client";
 
-// Prisma が提供する型を使用して、Post オブジェクトの型定義を拡張する
 export type ExtendedPost = {
   id: string;
   title: string;
   content: string;
   createdAt: Date;
   updatedAt: Date;
-  author: PostUser[]; // Post に関連する著者の配列
-  followers: User[]; // Post をフォローしているユーザーの配列
-  votes: Vote[]; // Post に関連する投票の配列
+  author: PostUser[];
+  followers: User[];
+  votes: Vote[];
 };
 
-// 上記の型を使って、Post オブジェクトの型を定義する
 type Post = ExtendedPost;
 
 const VoteResult = () => {
-  const [flag, setFlag] = useState(false);
-  setFlag(!flag);
-  const session = useSession();
-  const user = session.data?.user?.name;
   const [results, setResults] = useState<Post[]>([]);
   const [loadingFlag, setLoadingFlag] = useState(false);
+  const { data: session, status } = useSession();
+  const name = session?.user;
+
   useEffect(() => {
     async function getResult() {
-      const post = await fetch("api/voteResult");
-      const data = await post.json();
-      setResults(data);
-      setLoadingFlag(!loadingFlag);
+      try {
+        const post = await fetch("api/voteResult");
+        if (!post.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const data = await post.json();
+        setResults(data);
+        setLoadingFlag(true); // Fixed: Set loadingFlag to true when data is fetched
+      } catch (error) {
+        console.error("Error fetching vote results:", error);
+        // エラーが発生した場合、ローディングフラグを false に設定するなどの適切なエラーハンドリングを行う
+        setLoadingFlag(false);
+      }
     }
     getResult();
-  }, [flag]); // user が変更されたときにのみ useEffect が再実行される
+  }, [name]); // user が変更されたときにのみ useEffect が再実行される
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
@@ -52,7 +58,7 @@ const VoteResult = () => {
         >
           <h2 className="text-xl font-semibold">{data.title}</h2>
           <p className="text-gray-600 underline">
-            得票: <span className="text-3xl">{data.followers.length} </span>
+            Votes: <span className="text-3xl">{data.followers.length}</span>
           </p>
         </div>
       ))}
