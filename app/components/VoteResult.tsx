@@ -38,6 +38,7 @@ const VoteResult = () => {
     } catch (error) {
       console.error("Error fetching vote results:", error);
     }
+    console.log("test");
   }
   getResult();
 
@@ -52,7 +53,7 @@ const VoteResult = () => {
           </div>
         </div>
       )}
-
+      {!results && <div>Loading...</div>}
       {results.map((data: Post) => (
         <div
           key={data.id}
