@@ -53,7 +53,7 @@ const VoteResult = () => {
           </div>
         </div>
       )}
-      {!results && <div>Loading...</div>}
+      {results === null && <div>Loading...</div>}
       {results.map((data: Post) => (
         <div
           key={data.id}
