@@ -65,10 +65,10 @@ const VoteResult = () => {
         >
           <h2 className="text-xl font-semibold">{data.title}</h2>
           <p className="text-gray-600 underline">
-            Votes: <span className="text-3xl">{data.followers.length}</span>
-            <span>
+            投票数: <span className="text-3xl">{data.followers.length}</span>
+            <span className="text-end">
               <details>
-                <summary> フォロー者:</summary>
+                <summary> 投票者:</summary>
                 {data.followers.map((follower) => (
                   <span key={follower.id} className="pr-3">
                     {follower.name}
