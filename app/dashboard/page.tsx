@@ -6,6 +6,7 @@ import MyVote from "../components/MyVote";
 import AllProposal from "../components/AllProposal";
 import VoteResult from "../components/VoteResult";
 import { useRouter } from "next/navigation"; // useRouter を import
+import Link from "next/link";
 
 const Page = () => {
   const router = useRouter();
@@ -60,18 +61,12 @@ const Page = () => {
           >
             全提案を見る
           </button>
-          <button
+          <Link
+            href={"/voteResult"}
             className="mt-2 mb-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-1 px-1 rounded-full shadow-md transition duration-300 ease-in-out"
-            onClick={() =>
-              setToggleComponent({
-                myVote: false,
-                allProposal: false,
-                voteResult: true,
-              })
-            }
           >
             得票(上位5)
-          </button>
+          </Link>
         </div>
         <div className="col-span-5">
           {toggleComponent.myVote ? <MyVote /> : ""}
