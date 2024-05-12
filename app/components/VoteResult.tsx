@@ -20,21 +20,26 @@ const VoteResult = () => {
   const { data: session, status } = useSession();
   const name = session?.user;
 
-  useEffect(() => {
-    async function getResult() {
-      try {
-        const post = await fetch("api/voteResult", { cache: "no-store" });
-        if (!post.ok) {
-          throw new Error("Failed to fetch data");
-        }
-        const data = await post.json();
-        setResults(data);
-      } catch (error) {
-        console.error("Error fetching vote results:", error);
+  async function getResult() {
+    try {
+      const post = await fetch("api/voteResult", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(name),
+        cache: "no-store",
+      });
+      if (!post.ok) {
+        throw new Error("Failed to fetch data");
       }
+      const data = await post.json();
+      setResults(data);
+    } catch (error) {
+      console.error("Error fetching vote results:", error);
     }
-    getResult();
-  }, [name]); // user が変更されたときにのみ useEffect が再実行される
+  }
+  getResult();
 
   if (!results) {
     return <div>Loading...</div>;

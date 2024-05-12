@@ -1,7 +1,7 @@
 import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
 
-export const GET = async () => {
+export const POST = async (req: Request) => {
   const posts = await prisma.post.findMany({
     include: {
       followers: {
