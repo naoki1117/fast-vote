@@ -25,6 +25,7 @@ const Page = () => {
     allProposal: false,
     voteResult: false,
   });
+  console.log("d");
 
   return (
     <div className="h-screen">

@@ -28,6 +28,7 @@ const VoteResult = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        cache: "no-store",
         body: JSON.stringify(name),
       });
       if (!post.ok) {
@@ -38,7 +39,8 @@ const VoteResult = () => {
     } catch (error) {
       console.error("Error fetching vote results:", error);
     }
-    console.log("test");
+    // console.log("test");
+    console.log(results);
     setLoading(false);
   }
   getResult();
@@ -63,6 +65,11 @@ const VoteResult = () => {
           <h2 className="text-xl font-semibold">{data.title}</h2>
           <p className="text-gray-600 underline">
             Votes: <span className="text-3xl">{data.followers.length}</span>
+            <span>
+              {data.followers.map((follower) => (
+                <span key={follower.id}>{follower.name}</span>
+              ))}
+            </span>
           </p>
         </div>
       ))}
