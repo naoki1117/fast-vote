@@ -9,15 +9,10 @@ export default async function Home() {
   console.log(providers);
   return (
     <div className=" h-screen">
-      {providers &&
-        Object.values(providers).map((provider) => {
-          return (
-            <div key={provider.id}>
-              <SignInButton provider={provider} />
-              <WelcomeComponent />
-            </div>
-          );
-        })}
+      <div>
+        <SignInButton provider="credentials" />
+        <WelcomeComponent />
+      </div>
     </div>
   );
 }
