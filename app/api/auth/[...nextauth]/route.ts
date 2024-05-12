@@ -1,20 +1,11 @@
-// import { nextAuthOptions } from "@/app/lib/next-auth/options";
-// import NextAuth from "next-auth/next";
-
-// const handler = NextAuth(nextAuthOptions);
-
-// export { handler as GET, handler as POST };
-
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { Awaitable, NextAuthOptions, RequestInternal, User } from "next-auth";
+import { NextAuthOptions, User } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import prisma from "../../../lib/prisma";
 import { UserType } from "@/app/types/types";
-import { randomBytes, randomUUID } from "crypto";
-import bcrypt from "bcrypt";
 import NextAuth from "next-auth/next";
 
-export const nextAuthOptions: NextAuthOptions = {
+const handler = NextAuth({
   debug: process.env.NODE_ENV === "development",
 
   providers: [
@@ -39,15 +30,6 @@ export const nextAuthOptions: NextAuthOptions = {
           return null;
         }
 
-        // const passwordMatch = await bcrypt.compare(
-        //   credentials.password,
-        //   user.password
-        // );
-
-        // if (!passwordMatch) {
-        //   return null;
-        // }
-
         // ユーザーが見つかった場合はユーザーオブジェクトを返す
         return user ? user : null;
       },
@@ -59,8 +41,6 @@ export const nextAuthOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
 
   secret: process.env.NEXTAUTH_SECRET,
-};
+});
 
-const handler = NextAuth(nextAuthOptions);
-
-export { handler as GET, handler as POST };
+export default handler;
