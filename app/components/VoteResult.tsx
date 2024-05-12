@@ -37,7 +37,7 @@ const VoteResult = () => {
       }
     }
     getResult();
-  }, []); // user が変更されたときにのみ useEffect が再実行される
+  }, [user]); // user が変更されたときにのみ useEffect が再実行される
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
