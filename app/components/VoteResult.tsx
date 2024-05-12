@@ -17,7 +17,6 @@ type Post = ExtendedPost;
 
 const VoteResult = () => {
   const [results, setResults] = useState<Post[]>([]);
-  const [loadingFlag, setLoadingFlag] = useState(false);
   const { data: session, status } = useSession();
   const name = session?.user;
 
@@ -30,27 +29,24 @@ const VoteResult = () => {
         }
         const data = await post.json();
         setResults(data);
-        setLoadingFlag(true); // Fixed: Set loadingFlag to true when data is fetched
       } catch (error) {
         console.error("Error fetching vote results:", error);
-        // エラーが発生した場合、ローディングフラグを false に設定するなどの適切なエラーハンドリングを行う
-        setLoadingFlag(false);
       }
     }
     getResult();
   }, [name]); // user が変更されたときにのみ useEffect が再実行される
 
+  if (!results) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="max-w-4xl mx-auto mt-10">
-      {!loadingFlag ? (
-        <div>Loading...</div>
-      ) : (
-        <div className="text-center">
-          <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white py-2 px-4 rounded-full inline-block shadow-lg">
-            <h1 className="text-3xl font-bold"> TOP 5 </h1>
-          </div>
+      <div className="text-center">
+        <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white py-2 px-4 rounded-full inline-block shadow-lg">
+          <h1 className="text-3xl font-bold"> TOP 5 </h1>
         </div>
-      )}
+      </div>
+
       {results.map((data: Post) => (
         <div
           key={data.id}
