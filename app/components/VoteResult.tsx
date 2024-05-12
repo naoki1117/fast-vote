@@ -18,6 +18,8 @@ export type ExtendedPost = {
 type Post = ExtendedPost;
 
 const VoteResult = () => {
+  const [flag, setFlag] = useState(false);
+  setFlag(!flag);
   const session = useSession();
   const user = session.data?.user?.name;
   const [results, setResults] = useState<Post[]>([]);
@@ -30,7 +32,7 @@ const VoteResult = () => {
       setLoadingFlag(!loadingFlag);
     }
     getResult();
-  }, [user]); // user が変更されたときにのみ useEffect が再実行される
+  }, [flag]); // user が変更されたときにのみ useEffect が再実行される
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
