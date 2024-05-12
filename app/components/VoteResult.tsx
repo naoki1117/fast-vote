@@ -21,29 +21,30 @@ const VoteResult = () => {
   const [loading, setLoading] = useState(true); // ローディング状態を管理する
   const name = session?.user;
 
-  async function getResult() {
-    try {
-      const post = await fetch("api/voteResult", {
-        method: "post",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-        body: JSON.stringify(name),
-      });
-      if (!post.ok) {
-        throw new Error("Failed to fetch data");
+  useEffect(() => {
+    async function getResult() {
+      try {
+        const post = await fetch("api/voteResult", {
+          method: "post",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify(name),
+        });
+        if (!post.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const data = await post.json();
+        setResults(data);
+      } catch (error) {
+        console.error("Error fetching vote results:", error);
       }
-      const data = await post.json();
-      setResults(data);
-    } catch (error) {
-      console.error("Error fetching vote results:", error);
+      setLoading(false);
     }
-    // console.log("test");
-    console.log(results);
-    setLoading(false);
-  }
-  getResult();
+
+    getResult();
+  }, []); // useEffectを空の依存リストで初回のみ実行するようにする
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
@@ -66,9 +67,14 @@ const VoteResult = () => {
           <p className="text-gray-600 underline">
             Votes: <span className="text-3xl">{data.followers.length}</span>
             <span>
-              {data.followers.map((follower) => (
-                <span key={follower.id}>{follower.name}</span>
-              ))}
+              <details>
+                <summary> フォロー者:</summary>
+                {data.followers.map((follower) => (
+                  <span key={follower.id} className="pr-3">
+                    {follower.name}
+                  </span>
+                ))}
+              </details>
             </span>
           </p>
         </div>
