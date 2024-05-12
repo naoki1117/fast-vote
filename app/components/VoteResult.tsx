@@ -44,7 +44,7 @@ const VoteResult = () => {
     }
 
     getResult();
-  }, []); // useEffectを空の依存リストで初回のみ実行するようにする
+  }, [name]); // useEffectを空の依存リストで初回のみ実行するようにする
 
   return (
     <div className="max-w-4xl mx-auto mt-10">
