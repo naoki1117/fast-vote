@@ -97,9 +97,7 @@ const AllProposal = (email: any) => {
           </div>
         ))}
         {fetchFlag && (
-          <div className="text-3xl text-red-500">
-            通信中です。暫くお待ちください...
-          </div>
+          <div className=" text-red-500">通信中です。暫くお待ちください...</div>
         )}
 
         {viewFlag ? (
