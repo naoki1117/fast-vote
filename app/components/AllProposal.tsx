@@ -24,10 +24,7 @@ const AllProposal = (email: any) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!session) {
-      alert("セッションがタイムアウトしました。再度サインインしてください。");
-      router.push("/");
-    }
+
     if (selectedItems.length > 2) {
       alert("3つ以上の選択がされています!!");
       return;
@@ -60,7 +57,7 @@ const AllProposal = (email: any) => {
         if (res.ok) {
           const data = await res.json();
           setProposalData(data);
-          setViewFlag(!viewFlag);
+          setViewFlag(proposalData == true);
         } else {
           console.error("Failed to fetch user data");
         }
