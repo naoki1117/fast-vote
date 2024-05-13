@@ -5,6 +5,7 @@ const AllProposal = (email: any) => {
   const [proposalData, setProposalData] = useState<any>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [viewFlag, setViewFlag] = useState(false);
+  const [fetchFlag, setFetchFlag] = useState(false);
   const { data: session, status } = useSession();
   const name = session?.user;
 
@@ -34,7 +35,7 @@ const AllProposal = (email: any) => {
       alert("選択されていません!!");
       return;
     }
-    alert("通信中です。暫くお待ちください...");
+    setFetchFlag(true);
     const res = await fetch("api/postAction", {
       method: "POST",
       headers: {
@@ -50,7 +51,7 @@ const AllProposal = (email: any) => {
     } else {
       alert("投票が完了しました!!");
     }
-
+    setFetchFlag(false);
     console.log("Selected Items:", selectedItems);
   };
 
@@ -95,6 +96,12 @@ const AllProposal = (email: any) => {
             </div>
           </div>
         ))}
+        {fetchFlag && (
+          <div className="text-3xl text-red-500">
+            通信中です。暫くお待ちください...
+          </div>
+        )}
+
         {viewFlag ? (
           <div className="text-center">
             <input
