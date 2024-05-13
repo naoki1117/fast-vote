@@ -7,6 +7,7 @@ import React, { FC } from "react";
 const Header: FC = () => {
   const session = useSession();
   const name = session.data?.user?.name;
+  //
 
   return (
     <header className="bg-slate-600 text-gray-100 shadow-lg">
