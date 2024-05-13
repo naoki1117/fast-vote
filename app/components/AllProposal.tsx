@@ -34,16 +34,23 @@ const AllProposal = (email: any) => {
       alert("選択されていません!!");
       return;
     }
-    alert("投票が完了しました!!");
-    console.log("Selected Items:", selectedItems);
 
-    await fetch("api/postAction", {
+    const res = await fetch("api/postAction", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ selectedItems, name }),
     });
+
+    const postfailed = await res.json();
+
+    if (postfailed != null) {
+      alert(postfailed);
+    }
+
+    alert("投票が完了しました!!");
+    console.log("Selected Items:", selectedItems);
   };
 
   useEffect(() => {

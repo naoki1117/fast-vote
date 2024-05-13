@@ -10,7 +10,16 @@ export const POST = async (req: Request) => {
       where: {
         name: name.name,
       },
+      include: {
+        followedPosts: true,
+      },
     });
+
+    if (user?.followedPosts.length == 2) {
+      return NextResponse.json(
+        "既に投票済みです!訂正する場合管理者まで連絡ください。"
+      );
+    }
 
     // ポストを検索
     const posts = await prisma.post.findMany({
