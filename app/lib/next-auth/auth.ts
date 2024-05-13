@@ -37,6 +37,7 @@ export const nextAuthOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
+    maxAge: 7200, // 1時間で期限切れ（秒単位）
   },
   adapter: PrismaAdapter(prisma),
 
