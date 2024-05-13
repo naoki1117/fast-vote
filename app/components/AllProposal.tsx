@@ -34,7 +34,7 @@ const AllProposal = (email: any) => {
       alert("選択されていません!!");
       return;
     }
-
+    alert("通信中です。暫くお待ちください...");
     const res = await fetch("api/postAction", {
       method: "POST",
       headers: {
