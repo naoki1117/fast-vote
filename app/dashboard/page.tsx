@@ -90,6 +90,10 @@ const Page = () => {
           >
             ログアウト
           </button>
+          <div>
+            <p className=" text-red-400">データ初期化完了</p>
+            <p className="text-red-400">最終テスト済み</p>
+          </div>
         </div>
       </div>
     </div>
