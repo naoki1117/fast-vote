@@ -5,7 +5,7 @@ import prisma from "../prisma";
 import { UserType } from "@/app/types/types";
 
 // 日本時間の1時間を秒単位で計算
-const oneHourInSeconds = 1 * 60;
+const twoHourInSeconds = 120 * 60;
 
 export const nextAuthOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
@@ -38,7 +38,7 @@ export const nextAuthOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
-    maxAge: oneHourInSeconds,
+    maxAge: twoHourInSeconds,
   },
   adapter: PrismaAdapter(prisma),
 
