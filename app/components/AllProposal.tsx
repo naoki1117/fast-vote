@@ -57,7 +57,7 @@ const AllProposal = (email: any) => {
         if (res.ok) {
           const data = await res.json();
           setProposalData(data);
-          setViewFlag(viewFlag == true);
+          setViewFlag(true);
         } else {
           console.error("Failed to fetch user data");
         }
