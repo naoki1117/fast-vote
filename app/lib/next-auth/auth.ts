@@ -4,7 +4,8 @@ import CredentialProvider from "next-auth/providers/credentials";
 import prisma from "../prisma";
 import { UserType } from "@/app/types/types";
 
-import NextAuth from "next-auth/next";
+// 日本時間の1時間を秒単位で計算
+const oneHourInSeconds = 1 * 60;
 
 export const nextAuthOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
@@ -37,7 +38,7 @@ export const nextAuthOptions: NextAuthOptions = {
   ],
   session: {
     strategy: "jwt",
-    maxAge: 120, // 1時間で期限切れ（秒単位）
+    maxAge: oneHourInSeconds,
   },
   adapter: PrismaAdapter(prisma),
 

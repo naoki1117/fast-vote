@@ -1,5 +1,4 @@
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const AllProposal = (email: any) => {
@@ -8,8 +7,6 @@ const AllProposal = (email: any) => {
   const [viewFlag, setViewFlag] = useState(false);
   const { data: session, status } = useSession();
   const name = session?.user;
-
-  const router = useRouter();
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked, value } = e.target;
@@ -39,7 +36,6 @@ const AllProposal = (email: any) => {
     }
     alert("投票が完了しました!!");
     console.log("Selected Items:", selectedItems);
-    // チェックされた項目の処理を行う
 
     await fetch("api/postAction", {
       method: "POST",
