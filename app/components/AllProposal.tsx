@@ -42,14 +42,15 @@ const AllProposal = (email: any) => {
       },
       body: JSON.stringify({ selectedItems, name }),
     });
+    const postResult = await res.json();
+    console.log(postResult);
 
-    const postfailed = await res.json();
-
-    if (postfailed != null) {
-      alert(postfailed);
+    if (postResult == "failed") {
+      alert("既に投票済みです!訂正する場合管理者まで連絡ください。");
+    } else {
+      alert("投票が完了しました!!");
     }
 
-    alert("投票が完了しました!!");
     console.log("Selected Items:", selectedItems);
   };
 

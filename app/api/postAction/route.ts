@@ -16,9 +16,7 @@ export const POST = async (req: Request) => {
     });
 
     if (user?.followedPosts.length == 2) {
-      return NextResponse.json(
-        "既に投票済みです!訂正する場合管理者まで連絡ください。"
-      );
+      return NextResponse.json("failed");
     }
 
     // ポストを検索
@@ -56,7 +54,7 @@ export const POST = async (req: Request) => {
       }
     }
 
-    return NextResponse.json("");
+    return NextResponse.json("success");
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.error();
