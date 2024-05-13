@@ -1,4 +1,5 @@
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const AllProposal = (email: any) => {
@@ -7,6 +8,8 @@ const AllProposal = (email: any) => {
   const [viewFlag, setViewFlag] = useState(false);
   const { data: session, status } = useSession();
   const name = session?.user;
+
+  const router = useRouter();
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked, value } = e.target;
@@ -21,6 +24,10 @@ const AllProposal = (email: any) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!session) {
+      alert("セッションがタイムアウトしました。再度サインインしてください。");
+      router.push("/");
+    }
     if (selectedItems.length > 2) {
       alert("3つ以上の選択がされています!!");
       return;
