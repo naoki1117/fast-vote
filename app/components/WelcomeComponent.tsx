@@ -13,12 +13,12 @@ const AnimatedText = () => {
 
   return (
     <div className="text-center">
-      <p>The project has been completed.</p>
+      {/* <p>The project has been completed.</p>
       <p>
         For inquiries about the new project, please contact Naoki Kimura, the
         developer and administrator.
-      </p>
-      {/* <Transition
+      </p> */}
+      <Transition
         show={showText}
         as="h1"
         enter="transition-opacity duration-1000"
@@ -36,7 +36,7 @@ const AnimatedText = () => {
             {char}
           </Transition.Child>
         ))}
-      </Transition> */}
+      </Transition>
     </div>
   );
 };

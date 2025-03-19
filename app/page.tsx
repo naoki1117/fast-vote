@@ -10,7 +10,7 @@ export default async function Home() {
   return (
     <div className=" h-screen">
       <div>
-        {/* <SignInButton provider="credentials" /> */}
+        <SignInButton provider="credentials" />
         <WelcomeComponent />
       </div>
     </div>
