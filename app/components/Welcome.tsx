@@ -1,18 +1,16 @@
-/** トップ左のキャッチコピー。ルール（1人1件・全員提出後に投票）を先に伝える */
+/** ログイン前トップ。キャッチコピーとルール */
 const Welcome = () => {
   return (
     <div className="space-y-4">
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">
-        Fast Vote
-      </p>
+      <p className="text-sm font-medium text-indigo-600">Fast Vote</p>
       <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl">
-        提案を見て、
+        書いて、揃えて、
         <br />
-        すばやく投票する。
+        票で決める。
       </h1>
       <p className="max-w-md text-base leading-7 text-slate-600">
-        提案は1人1件。同じ会社の全員が提出してから投票が始まります。
-        投票は他の人の提案から2件選べます。
+        毎回ホストを決め、ホストがお題を出します。提案は1人1件。
+        全員の提出後に投票します。投票は1件または2件。送信後は変更できません。
       </p>
     </div>
   );

@@ -5,8 +5,10 @@ import Welcome from "./components/Welcome";
 export default function Home() {
   return (
     <div className="page-shell py-10 sm:py-16">
-      <div className="grid items-center gap-10 lg:grid-cols-2">
-        <Welcome />
+      <div className="grid items-start gap-10 lg:grid-cols-2">
+        <div className="lg:flex lg:min-h-[calc(100vh-10rem)] lg:items-center lg:pb-36">
+          <Welcome />
+        </div>
         <AuthPanel />
       </div>
     </div>

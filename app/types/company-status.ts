@@ -1,10 +1,15 @@
-/** 会社メンバー1人分の提出状態 */
+export type RoundPhase = "nominate" | "topic" | "propose" | "vote" | "complete";
+
+/** 会社メンバー1人分の提出・投票・削除申請・ホスト指名 */
 export type CompanyMemberStatus = {
   id: string;
   name: string | null;
   email: string | null;
   submitted: boolean;
+  voted: boolean;
+  resetRequested: boolean;
   proposalTitle: string | null;
+  nominationCount: number;
   /** ログイン中の自分かどうか（一覧で「あなた」と出す） */
   isMe: boolean;
 };
@@ -14,7 +19,21 @@ export type CompanyStatusPayload = {
   companyName: string | null;
   members: CompanyMemberStatus[];
   submittedCount: number;
+  votedCount: number;
+  resetRequestCount: number;
+  nominatedCount: number;
   totalCount: number;
-  /** 全員提出済みなら true。投票 API でも同じ値を見る */
+  phase: RoundPhase;
+  /** 全員提出済みかつお題ありなら true */
   votingOpen: boolean;
+  votingComplete: boolean;
+  iHaveVoted: boolean;
+  iRequestedReset: boolean;
+  iAmHost: boolean;
+  myNomineeId: string | null;
+  myVotedPostIds: string[];
+  host: { id: string; name: string | null } | null;
+  topicTitle: string | null;
+  topicContent: string | null;
+  hostTied: boolean;
 };

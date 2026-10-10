@@ -71,6 +71,18 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json({ error: "ユーザーが見つかりません。" }, { status: 404 });
     }
+    if (user.companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: user.companyId },
+        select: { topicTitle: true },
+      });
+      if (!company?.topicTitle) {
+        return NextResponse.json(
+          { error: "ホストがお題を出すまで提案できません。" },
+          { status: 403 }
+        );
+      }
+    }
 
     // authorId を where に直接書くと、古い Prisma クライアントでは Unknown argument になる
     const existing = await prisma.post.findFirst({

@@ -21,6 +21,10 @@ model User {
   // 提案は1人1件。逆向きは Post.author
   proposal      Post?     @relation("UserProposal")
   votes         Vote[]
+  resetRequest  ResetRequest?
+  hostedCompany Company?  @relation("CompanyHost")
+  nominationsGiven    HostNomination[] @relation("NominationBy")
+  nominationsReceived HostNomination[] @relation("NominationFor")
   // 会社を消すと所属ユーザーも消える
   company       Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId     String?   @map("company_id")
@@ -57,10 +61,42 @@ model Vote {
 }
 
 model Company {
-  id    String @id @default(cuid())
-  name  String
-  users User[]
-  posts Post[]
+  id              String           @id @default(cuid())
+  name            String
+  users           User[]
+  posts           Post[]
+  resetRequests   ResetRequest[]
+  hostNominations HostNomination[]
+  host            User?            @relation("CompanyHost", fields: [hostId], references: [id], onDelete: SetNull)
+  hostId          String?          @unique @map("host_id")
+  topicTitle      String?          @map("topic_title")
+  topicContent    String?          @map("topic_content")
 
   @@map("companies")
+}
+
+// 各ラウンド、メンバーが1人をホストに指名する
+model HostNomination {
+  id        String   @id @default(cuid())
+  user      User     @relation("NominationBy", fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique @map("user_id")
+  nominee   User     @relation("NominationFor", fields: [nomineeId], references: [id], onDelete: Cascade)
+  nomineeId String   @map("nominee_id")
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String   @map("company_id")
+  createdAt DateTime @default(now())
+
+  @@map("host_nominations")
+}
+
+// 投票完了後、全員が申請すると提案と票を消して次のラウンドに戻す
+model ResetRequest {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique @map("user_id")
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String   @map("company_id")
+  createdAt DateTime @default(now())
+
+  @@map("reset_requests")
 }

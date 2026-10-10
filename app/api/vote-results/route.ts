@@ -36,7 +36,7 @@ export const GET = async () => {
       },
     });
 
-    const top5Posts = posts
+    const sorted = posts
       .map((post) => ({
         id: post.id,
         title: post.title,
@@ -45,10 +45,22 @@ export const GET = async () => {
         voters: post.votes.map((vote) => vote.user),
         voteCount: post.votes.length,
       }))
-      .sort((a, b) => b.voteCount - a.voteCount)
-      .slice(0, 5);
+      .sort((a, b) => b.voteCount - a.voteCount);
 
-    return NextResponse.json(top5Posts);
+    // 競技方式: 同票は同じ順位、次は人数分飛ばす（1位・1位・3位）
+    let previousCount: number | null = null;
+    let previousRank = 1;
+    const ranked = sorted.map((post, index) => {
+      const rank =
+        previousCount !== null && post.voteCount === previousCount
+          ? previousRank
+          : index + 1;
+      previousCount = post.voteCount;
+      previousRank = rank;
+      return { ...post, rank };
+    });
+
+    return NextResponse.json(ranked.slice(0, 5));
   } catch (error) {
     console.error("Error fetching vote results:", error);
     return NextResponse.json({ error: "取得に失敗しました。" }, { status: 500 });

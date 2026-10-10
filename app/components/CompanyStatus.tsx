@@ -59,7 +59,8 @@ const CompanyStatus = () => {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">提出状況</h1>
         <p className="mt-1 text-sm text-slate-500">
-          {status.companyName} のメンバーが全員提案を提出すると、投票が始まります。
+          {status.companyName}。提出 {status.submittedCount}/{status.totalCount}
+          {status.votingOpen ? `　投票 ${status.votedCount}/${status.totalCount}` : ""}
         </p>
       </div>
 
@@ -71,13 +72,17 @@ const CompanyStatus = () => {
               {status.submittedCount} / {status.totalCount}
             </p>
           </div>
-          {status.votingOpen ? (
+          {status.votingComplete ? (
+            <span className="rounded-full bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700">
+              投票終了
+            </span>
+          ) : status.votingOpen ? (
             <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700">
-              投票受付中
+              投票中
             </span>
           ) : (
             <span className="rounded-full bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800">
-              投票はまだ開始していません
+              提出待ち
             </span>
           )}
         </div>
@@ -101,15 +106,27 @@ const CompanyStatus = () => {
                   <p className="text-sm text-slate-400">未提出</p>
                 )}
               </div>
-              {member.submitted ? (
-                <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                  提出済み
-                </span>
-              ) : (
-                <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
-                  未提出
-                </span>
-              )}
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                {member.submitted ? (
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                    提出済み
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                    未提出
+                  </span>
+                )}
+                {status.votingOpen &&
+                  (member.voted ? (
+                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                      投票済み
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                      未投票
+                    </span>
+                  ))}
+              </span>
             </li>
           ))}
         </ul>

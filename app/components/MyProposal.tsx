@@ -17,6 +17,8 @@ const inputClass =
 
 const MyProposal = () => {
   const [proposal, setProposal] = useState<ProposalPayload | null>(null);
+  const [topicTitle, setTopicTitle] = useState<string | null>(null);
+  const [topicContent, setTopicContent] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [title, setTitle] = useState("");
@@ -26,6 +28,12 @@ const MyProposal = () => {
 
   const loadProposal = async () => {
     try {
+      const statusRes = await fetch("/api/company-status");
+      if (statusRes.ok) {
+        const status = await statusRes.json();
+        setTopicTitle(status.topicTitle ?? null);
+        setTopicContent(status.topicContent ?? null);
+      }
       const res = await fetch("/api/my-proposal");
       // 取得失敗でもフォームは出す（500 のとき提出できなくなるのを避ける）
       if (!res.ok) {
@@ -71,13 +79,26 @@ const MyProposal = () => {
     return <div className="card p-8 text-center text-slate-500">提案を読み込み中...</div>;
   }
 
+  if (!proposal && !topicTitle) {
+    return (
+      <div className="card p-8 text-center">
+        <h1 className="text-xl font-bold text-slate-900">提案を提出</h1>
+        <p className="mt-2 text-sm text-slate-500">ホストがお題を出すまで、提案はできません。</p>
+      </div>
+    );
+  }
+
   // まだ提案がない（または取得失敗）→ 提出フォーム
   if (!proposal) {
     return (
       <div className="space-y-5">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">提案を提出</h1>
-          <p className="mt-1 text-sm text-slate-500">提出できる提案は1人1件です。</p>
+          <p className="mt-1 text-sm text-slate-500">お題に沿って、1人1件提出してください。</p>
+          {topicTitle && (
+            <p className="mt-2 text-sm font-medium text-indigo-700">お題：{topicTitle}</p>
+          )}
+          {topicContent && <p className="mt-1 text-sm text-slate-500">{topicContent}</p>}
         </div>
         {failed && (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">

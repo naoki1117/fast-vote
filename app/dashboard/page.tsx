@@ -3,26 +3,35 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import CompanyStatus from "../components/CompanyStatus";
+import HostRound from "../components/HostRound";
 import MyProposal from "../components/MyProposal";
 import PageLoading from "../components/PageLoading";
 import ProposalList from "../components/ProposalList";
+import StatusBanner from "../components/StatusBanner";
 import VoteResults from "../components/VoteResults";
 
-type ViewKey = "home" | "myProposal" | "companyStatus" | "proposals" | "voteResults";
+type ViewKey =
+  | "home"
+  | "host"
+  | "myProposal"
+  | "companyStatus"
+  | "proposals"
+  | "voteResults";
 
 const navItems: { key: ViewKey; label: string; hint: string }[] = [
-  { key: "home", label: "ホーム", hint: "操作の案内" },
-  { key: "myProposal", label: "自分の提案", hint: "1件まで提出" },
-  { key: "companyStatus", label: "提出状況", hint: "会社メンバー" },
-  { key: "proposals", label: "投票する", hint: "全員提出後に開始" },
-  { key: "voteResults", label: "得票（上位5）", hint: "ランキング" },
+  { key: "home", label: "ホーム", hint: "いまの状況" },
+  { key: "host", label: "ホスト・お題", hint: "指名とお題" },
+  { key: "myProposal", label: "自分の提案", hint: "1人1件" },
+  { key: "companyStatus", label: "提出状況", hint: "誰が出したか" },
+  { key: "proposals", label: "投票する", hint: "1〜2件" },
+  { key: "voteResults", label: "得票（上位5）", hint: "同票は同順位" },
 ];
 
 const Page = () => {
   const { data: session, status } = useSession();
   const user = session?.user;
   // 最初に提案提出へ。未提出だと投票が始まらないため
-  const [view, setView] = useState<ViewKey>("myProposal");
+  const [view, setView] = useState<ViewKey>("host");
   const [mounted, setMounted] = useState(false);
 
   // サーバー HTML とクライアントのセッション表示が食い違う hydration エラーを避ける
@@ -40,7 +49,8 @@ const Page = () => {
   }
 
   return (
-    <div className="page-shell py-6 sm:py-8">
+    <div className="page-shell space-y-6 py-6 sm:py-8">
+      <StatusBanner />
       <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
         <aside className="card h-fit p-3 lg:sticky lg:top-24">
           <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -75,14 +85,16 @@ const Page = () => {
             <div className="space-y-6">
               <div className="card p-6 sm:p-8">
                 <p className="text-sm font-medium text-indigo-600">
-                  ようこそ、{user?.name ?? "ゲスト"} さん
-                  {user?.companyName ? `（${user.companyName}）` : ""}
+                  {user?.companyName ?? "会社未所属"}
                 </p>
                 <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-                  ダッシュボード
+                  書いて、揃えて、票で決める。
                 </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                  提案は1人1件までです。同じ会社の全員が提出を終えると投票が始まります。投票は他の人の提案から2件選べます。
+                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                  {user?.name ?? "ゲスト"}さん。毎回ホストを指名し、ホストがお題を出します。
+                  提案は1人1件です。全員が提出すると投票を開始できます。
+                  投票は1件または2件で、送信後は変更できません。
+                  全員の投票が完了したあと、全員が削除申請するとホスト・お題・提案・票が初期化されます。
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -101,6 +113,7 @@ const Page = () => {
               </div>
             </div>
           )}
+          {view === "host" && <HostRound />}
           {view === "myProposal" && <MyProposal />}
           {view === "companyStatus" && <CompanyStatus />}
           {view === "proposals" && <ProposalList />}

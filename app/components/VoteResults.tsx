@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-/** /api/vote-results の1件。voteCount で並べ替え済み */
+/** /api/vote-results の1件。同票は同じ rank（1位・1位・3位） */
 type Result = {
   id: string;
   title: string;
   content: string;
   authorName?: string | null;
   voteCount: number;
+  rank: number;
   voters: { id: string; name?: string | null }[];
 };
 
@@ -50,15 +51,18 @@ const VoteResults = () => {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">得票ランキング</h1>
-        <p className="mt-1 text-sm text-slate-500">投票数が多い提案の上位5件です。</p>
+        <p className="mt-1 text-sm text-slate-500">
+          投票数が多い提案の上位5件です。同票は同じ順位、次は飛ばします（例: 1位・1位・3位）。
+        </p>
       </div>
 
       {results.length === 0 ? (
         <div className="card p-8 text-center text-slate-500">まだ投票結果がありません。</div>
       ) : (
         <div className="space-y-3">
-          {results.map((data, index) => {
+          {results.map((data) => {
             const count = data.voteCount;
+            const rank = data.rank ?? 0;
             const width = `${Math.round((count / maxVotes) * 100)}%`;
             return (
               <article key={data.id} className="card p-5">
@@ -66,10 +70,10 @@ const VoteResults = () => {
                   <div className="flex min-w-0 items-start gap-3">
                     <span
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                        rankStyle[index] ?? "bg-slate-100 text-slate-600"
+                        rankStyle[rank - 1] ?? "bg-slate-100 text-slate-600"
                       }`}
                     >
-                      {index + 1}
+                      {rank}
                     </span>
                     <div className="min-w-0">
                       <h2 className="font-semibold text-slate-900">{data.title}</h2>

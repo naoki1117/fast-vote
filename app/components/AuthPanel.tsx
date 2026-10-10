@@ -34,7 +34,7 @@ export default function AuthPanel() {
         <>
           <h2 className="text-xl font-semibold text-slate-900">ログイン</h2>
           <p className="mt-2 mb-6 text-sm text-slate-500">
-            登録済みのメールアドレスとパスワードでダッシュボードへ進めます。
+            登録済みのメールアドレスとパスワードでログインします。
           </p>
           <SignInForm />
         </>
@@ -42,7 +42,7 @@ export default function AuthPanel() {
         <>
           <h2 className="text-xl font-semibold text-slate-900">新規登録</h2>
           <p className="mt-2 mb-6 text-sm text-slate-500">
-            会社名、メールアドレス、パスワードを入力してアカウントを作成します。
+            同一の会社名で登録すると、同じ会社に所属します。パスワードは8文字以上です。
           </p>
           <SignUpForm />
         </>
