@@ -124,7 +124,7 @@ Studio は制限のない環境で起動し、テーブルの中身を確認し�
 
 ## セットアップ
 
-必要環境: Node.js 18+、Supabase（PostgreSQL）
+必要環境: Node.js 24.x、Supabase（PostgreSQL）。Vercel に載せる場合も Node.js Version は 24.x にする。
 
 ```bash
 npm install
