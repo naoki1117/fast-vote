@@ -1,25 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { CompanyStatusPayload } from "@/app/types/company-status";
+import { useState } from "react";
+import { useCompanyStatus } from "@/app/lib/company-status-context";
 
 /** 投票開始・終了と、全員申請での初期化をダッシュボード上部に出す */
 export default function StatusBanner() {
-  const [status, setStatus] = useState<CompanyStatusPayload | null>(null);
+  const { status, refresh } = useCompanyStatus();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-
-  const load = async () => {
-    const res = await fetch("/api/company-status");
-    if (!res.ok) {
-      return;
-    }
-    setStatus(await res.json());
-  };
-
-  useEffect(() => {
-    load().catch(() => undefined);
-  }, []);
 
   if (!status?.companyName) {
     return null;
@@ -35,11 +23,7 @@ export default function StatusBanner() {
       setError(data.error ?? "削除申請できませんでした。");
       return;
     }
-    if (data.reset) {
-      window.location.reload();
-      return;
-    }
-    await load();
+    await refresh();
   };
 
   return (

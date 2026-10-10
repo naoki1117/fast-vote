@@ -1,43 +1,25 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import type { CompanyStatusPayload } from "@/app/types/company-status";
+import { useCompanyStatus } from "@/app/lib/company-status-context";
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none ring-indigo-500 transition focus:border-indigo-400 focus:ring-2";
 
 /** ホスト指名と、ホストによるお題提出 */
 export default function HostRound() {
-  const [status, setStatus] = useState<CompanyStatusPayload | null>(null);
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const { status, loaded, failed, refresh } = useCompanyStatus();
   const [nomineeId, setNomineeId] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const load = async () => {
-    try {
-      const res = await fetch("/api/company-status");
-      if (!res.ok) {
-        setFailed(true);
-        setLoaded(true);
-        return;
-      }
-      const data: CompanyStatusPayload = await res.json();
-      setStatus(data);
-      setNomineeId(data.myNomineeId ?? "");
-      setLoaded(true);
-    } catch {
-      setFailed(true);
-      setLoaded(true);
-    }
-  };
-
   useEffect(() => {
-    load();
-  }, []);
+    if (status?.myNomineeId) {
+      setNomineeId(status.myNomineeId);
+    }
+  }, [status?.myNomineeId]);
 
   const nominate = async (e: FormEvent) => {
     e.preventDefault();
@@ -58,7 +40,7 @@ export default function HostRound() {
       setError(data.error ?? "指名に失敗しました。");
       return;
     }
-    setStatus(data.status);
+    await refresh();
   };
 
   const submitTopic = async (e: FormEvent) => {
@@ -76,7 +58,7 @@ export default function HostRound() {
       setError(data.error ?? "お題を出せませんでした。");
       return;
     }
-    setStatus(data.status);
+    await refresh();
   };
 
   if (!loaded) {

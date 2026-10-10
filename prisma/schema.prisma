@@ -67,6 +67,7 @@ model Company {
   posts           Post[]
   resetRequests   ResetRequest[]
   hostNominations HostNomination[]
+  roundSignal     RoundSignal?
   host            User?            @relation("CompanyHost", fields: [hostId], references: [id], onDelete: SetNull)
   hostId          String?          @unique @map("host_id")
   topicTitle      String?          @map("topic_title")
@@ -99,4 +100,13 @@ model ResetRequest {
   createdAt DateTime @default(now())
 
   @@map("reset_requests")
+}
+
+// Realtime 通知用。中身は会社IDと更新時刻だけ（提案や票は載せない）
+model RoundSignal {
+  companyId String   @id @map("company_id")
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bumpedAt  DateTime @updatedAt @map("bumped_at")
+
+  @@map("round_signals")
 }

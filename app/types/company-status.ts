@@ -16,6 +16,7 @@ export type CompanyMemberStatus = {
 
 /** 提出状況画面と投票可否判定で共有するペイロード */
 export type CompanyStatusPayload = {
+  companyId: string | null;
   companyName: string | null;
   members: CompanyMemberStatus[];
   submittedCount: number;

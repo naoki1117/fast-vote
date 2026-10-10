@@ -1,6 +1,7 @@
 import { nextAuthOptions } from "@/app/lib/auth";
 import { getCompanyStatusByEmail, resetCompanyRound } from "@/app/lib/company-status";
 import prisma from "@/app/lib/prisma";
+import { bumpRoundSignal } from "@/app/lib/round-signal";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -46,8 +47,11 @@ export async function POST() {
 
     if (everyoneAsked) {
       await resetCompanyRound(user.companyId);
+      await bumpRoundSignal(user.companyId);
       return NextResponse.json({ ok: true, reset: true });
     }
+
+    await bumpRoundSignal(user.companyId);
 
     return NextResponse.json({
       ok: true,

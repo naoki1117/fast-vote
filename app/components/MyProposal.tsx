@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useCompanyStatus } from "@/app/lib/company-status-context";
 
 type Voter = { id: string; name?: string | null };
 /** /api/my-proposal が返す自分の提案。null なら未提出 */
@@ -16,25 +17,23 @@ const inputClass =
   "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none ring-indigo-500 transition focus:border-indigo-400 focus:ring-2";
 
 const MyProposal = () => {
+  const { status, refresh } = useCompanyStatus();
   const [proposal, setProposal] = useState<ProposalPayload | null>(null);
-  const [topicTitle, setTopicTitle] = useState<string | null>(null);
-  const [topicContent, setTopicContent] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const topicTitle = status?.topicTitle ?? null;
+  const topicContent = status?.topicContent ?? null;
+  const mySubmitted = status?.members.some((m) => m.isMe && m.submitted) ?? false;
+  const votedCount = status?.votedCount ?? 0;
+  const phase = status?.phase ?? "nominate";
 
-  const loadProposal = async () => {
+  const loadProposal = useCallback(async () => {
     try {
-      const statusRes = await fetch("/api/company-status");
-      if (statusRes.ok) {
-        const status = await statusRes.json();
-        setTopicTitle(status.topicTitle ?? null);
-        setTopicContent(status.topicContent ?? null);
-      }
-      const res = await fetch("/api/my-proposal");
+      const res = await fetch("/api/my-proposal", { cache: "no-store" });
       // 取得失敗でもフォームは出す（500 のとき提出できなくなるのを避ける）
       if (!res.ok) {
         setFailed(true);
@@ -49,11 +48,11 @@ const MyProposal = () => {
       setFailed(true);
       setLoaded(true);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadProposal();
-  }, []);
+  }, [loadProposal, topicTitle, mySubmitted, votedCount, phase]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -72,6 +71,7 @@ const MyProposal = () => {
       return;
     }
 
+    await refresh();
     await loadProposal();
   };
 

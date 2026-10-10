@@ -2,6 +2,7 @@ import prisma from "@/app/lib/prisma";
 import type { CompanyStatusPayload, RoundPhase } from "@/app/types/company-status";
 
 const empty: CompanyStatusPayload = {
+  companyId: null,
   companyName: null,
   members: [],
   submittedCount: 0,
@@ -154,6 +155,7 @@ export async function getCompanyStatusByEmail(
   }
 
   return {
+    companyId,
     companyName: user.company.name,
     members,
     submittedCount,

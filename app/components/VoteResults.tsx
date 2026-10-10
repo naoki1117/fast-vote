@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useCompanyStatus } from "@/app/lib/company-status-context";
 
 /** /api/vote-results の1件。同票は同じ rank（1位・1位・3位） */
 type Result = {
@@ -21,13 +22,17 @@ const rankStyle = [
 ];
 
 const VoteResults = () => {
+  const { status } = useCompanyStatus();
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
+  const votedCount = status?.votedCount ?? 0;
+  const votingComplete = Boolean(status?.votingComplete);
+  const phase = status?.phase ?? "nominate";
 
   useEffect(() => {
     async function getResult() {
       try {
-        const res = await fetch("/api/vote-results");
+        const res = await fetch("/api/vote-results", { cache: "no-store" });
         if (!res.ok) {
           throw new Error("Failed to fetch data");
         }
@@ -39,7 +44,7 @@ const VoteResults = () => {
     }
 
     getResult();
-  }, []);
+  }, [votedCount, votingComplete, phase]);
 
   if (loading) {
     return <div className="card p-8 text-center text-slate-500">結果を読み込み中...</div>;

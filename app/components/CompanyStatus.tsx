@@ -1,32 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { CompanyStatusPayload } from "@/app/types/company-status";
+import { useCompanyStatus } from "@/app/lib/company-status-context";
 
 /** 同じ会社の誰が提案済みかを一覧し、投票開始の目安にする */
 const CompanyStatus = () => {
-  const [status, setStatus] = useState<CompanyStatusPayload | null>(null);
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch("/api/company-status");
-        if (!res.ok) {
-          setFailed(true);
-          setLoaded(true);
-          return;
-        }
-        setStatus(await res.json());
-        setLoaded(true);
-      } catch {
-        setFailed(true);
-        setLoaded(true);
-      }
-    };
-    load();
-  }, []);
+  const { status, loaded, failed } = useCompanyStatus();
 
   if (!loaded) {
     return <div className="card p-8 text-center text-slate-500">提出状況を読み込み中...</div>;

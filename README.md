@@ -38,6 +38,7 @@ Web の案件でよく求められる組み合わせを、1つのリポジトリ
 | **bcrypt**                        | パスワードのハッシュ化              | パスワードをそのまま DB に置かないため                                                                                                                                                           |
 | **Prisma 5**                      | DB アクセス                         | テーブル定義（`schema.prisma`）から TypeScript の型が生成され、クエリミスを減らせる                                                                                                              |
 | **PostgreSQL（Supabase）**        | データベース                        | リレーショナル DB の標準に近く、外部キーやユニーク制約（1人1提案、重複投票禁止）を DB 側で守れる。ホスティングは無料枠のある Supabase を使い、本番に近い接続（コネクションプール）を経験するため |
+| **Supabase Realtime**             | ダッシュボードの即時更新            | 指名・提案・投票のあと、同じ会社の画面をリロードなしで更新する。公開キーは通知用テーブルだけ読める（RLS）                                                                                           |
 | **Tailwind CSS**                  | UI                                  | コンポーネントごとにクラスを書いて見た目を揃えやすく、デザイン専用の CSS ファイルを増やさない                                                                                                    |
 
 データベースを SQLite のままにせず PostgreSQL にしたのは、「ローカルだけで動く練習」ではなく、実際の Web サービスで使う構成に近づけるためです。
@@ -208,6 +209,7 @@ erDiagram
   companies ||--o{ posts : "提案"
   companies ||--o{ host_nominations : "指名"
   companies ||--o{ reset_requests : "削除申請"
+  companies ||--o| round_signals : "Realtime通知"
   users ||--o| posts : "提案は1件"
   users ||--o{ votes : "投票"
   users ||--o{ host_nominations : "指名する"
@@ -258,6 +260,17 @@ erDiagram
     string company_id FK
   }
 ```
+
+---
+
+## 本番（Vercel）で Realtime を使う
+
+Vercel に次を入れる（値は Supabase の Project Settings → API）。
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+テーブルを Prisma で作ったあと、一度 `prisma/rls.sql` を SQL エディタ（または `npx prisma db execute --file prisma/rls.sql`）で実行する。提案・票・ユーザーは公開キーからは読めず、`round_signals` の変更通知だけ届く。
 
 ---
 

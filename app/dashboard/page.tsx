@@ -9,6 +9,7 @@ import PageLoading from "../components/PageLoading";
 import ProposalList from "../components/ProposalList";
 import StatusBanner from "../components/StatusBanner";
 import VoteResults from "../components/VoteResults";
+import { CompanyStatusProvider } from "../lib/company-status-context";
 
 type ViewKey =
   | "home"
@@ -49,6 +50,7 @@ const Page = () => {
   }
 
   return (
+    <CompanyStatusProvider>
     <div className="page-shell space-y-6 py-6 sm:py-8">
       <StatusBanner />
       <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
@@ -121,6 +123,7 @@ const Page = () => {
         </section>
       </div>
     </div>
+    </CompanyStatusProvider>
   );
 };
 

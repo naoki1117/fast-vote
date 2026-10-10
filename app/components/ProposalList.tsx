@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { useCompanyStatus } from "@/app/lib/company-status-context";
 import CompanyStatus from "./CompanyStatus";
 
 /** /api/proposals の1件。author.email で自分の提案かを判定する */
@@ -14,20 +15,21 @@ type Proposal = {
 
 /** 全員提出後に、自分以外の提案へ1票または2票入れる画面 */
 const ProposalList = () => {
+  const { status, loaded: statusLoaded, failed: statusFailed, refresh } = useCompanyStatus();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [votingOpen, setVotingOpen] = useState(false);
-  const [votingComplete, setVotingComplete] = useState(false);
-  const [phase, setPhase] = useState<string>("nominate");
-  const [hasVoted, setHasVoted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(
     null
   );
   const { data: session } = useSession();
   const myEmail = session?.user?.email;
+  const votingOpen = Boolean(status?.votingOpen);
+  const votingComplete = Boolean(status?.votingComplete);
+  const phase = status?.phase ?? "nominate";
+  const hasVoted = Boolean(status?.iHaveVoted);
   const locked = hasVoted || votingComplete;
 
   const handleCheckboxChange = (id: string) => {
@@ -80,27 +82,32 @@ const ProposalList = () => {
       return;
     }
 
-    setHasVoted(true);
     setMessage({ type: "ok", text: "投票を受け付けました。この内容は変更できません。" });
+    await refresh();
   };
 
   useEffect(() => {
+    if (status?.iHaveVoted && Array.isArray(status.myVotedPostIds)) {
+      setSelectedItems(status.myVotedPostIds);
+    }
+    if (status?.phase === "nominate" || status?.phase === "topic") {
+      setSelectedItems([]);
+      setProposals([]);
+    }
+  }, [status?.iHaveVoted, status?.myVotedPostIds, status?.phase]);
+
+  useEffect(() => {
+    if (!votingOpen) {
+      setLoaded(true);
+      return;
+    }
     const fetchProposals = async () => {
       try {
-        const [statusRes, proposalRes] = await Promise.all([
-          fetch("/api/company-status"),
-          fetch("/api/proposals"),
-        ]);
-        if (!statusRes.ok || !proposalRes.ok) {
+        const proposalRes = await fetch("/api/proposals", { cache: "no-store" });
+        if (!proposalRes.ok) {
           setLoadError(true);
           return;
         }
-        const status = await statusRes.json();
-        setVotingOpen(Boolean(status.votingOpen));
-        setVotingComplete(Boolean(status.votingComplete));
-        setPhase(status.phase ?? "nominate");
-        setHasVoted(Boolean(status.iHaveVoted));
-        setSelectedItems(Array.isArray(status.myVotedPostIds) ? status.myVotedPostIds : []);
         setProposals(await proposalRes.json());
         setLoaded(true);
       } catch (error) {
@@ -110,9 +117,9 @@ const ProposalList = () => {
     };
 
     fetchProposals();
-  }, []);
+  }, [votingOpen, status?.submittedCount, status?.phase]);
 
-  if (loadError) {
+  if (loadError || statusFailed) {
     return (
       <div className="card p-8 text-center">
         <h1 className="text-xl font-bold text-slate-900">投票</h1>
@@ -121,7 +128,7 @@ const ProposalList = () => {
     );
   }
 
-  if (!loaded) {
+  if (!loaded || !statusLoaded) {
     return <div className="card p-8 text-center text-slate-500">提案を読み込み中...</div>;
   }
 
