@@ -39,7 +39,7 @@ Web の案件でよく求められる組み合わせを、1つのリポジトリ
 | **bcrypt**                        | パスワードのハッシュ化              | パスワードをそのまま DB に置かないため                                                                                                                                                           |
 | **Prisma 5**                      | DB アクセス                         | テーブル定義（`schema.prisma`）から TypeScript の型が生成され、クエリミスを減らせる                                                                                                              |
 | **PostgreSQL（Supabase）**        | データベース                        | リレーショナル DB の標準に近く、外部キーやユニーク制約（1人1提案、重複投票禁止）を DB 側で守れる。ホスティングは無料枠のある Supabase を使い、本番に近い接続（コネクションプール）を経験するため |
-| **Supabase Realtime**             | ダッシュボードの即時更新            | 指名・お題・提案・投票・削除申請に加え、同じ会社への新規登録・ログインでも他メンバーの画面を更新する。公開キーは通知用テーブルだけ読める（RLS）。定期ポーリングは使わない                         |
+| **Supabase Realtime**             | ダッシュボードの即時更新            | 指名・お題・提案・投票・削除申請に加え、同じ会社への新規登録・ログインでも他メンバーの画面を更新する。公開キーは通知用テーブルだけ読める（RLS）。定期ポーリングは使わない                        |
 | **Tailwind CSS**                  | UI                                  | コンポーネントごとにクラスを書いて見た目を揃えやすく、デザイン専用の CSS ファイルを増やさない                                                                                                    |
 
 データベースを SQLite のままにせず PostgreSQL にしたのは、「ローカルだけで動く練習」ではなく、実際の Web サービスで使う構成に近づけるためです。
@@ -147,77 +147,77 @@ PostgreSQL（Supabase）。テーブル名は Prisma の `@@map` どおりです
 
 ### companies（会社）
 
-| カラム          | 型       | 制約                         | 意味                         |
-| --------------- | -------- | ---------------------------- | ---------------------------- |
-| id              | String   | PK                           | 会社 ID                      |
-| name            | String   |                              | 会社名（同じ名前なら同じ会社） |
-| host_id         | String?  | UNIQUE, FK → users.id        | 今ラウンドのホスト           |
-| topic_title     | String?  |                              | ホストが出したお題           |
-| topic_content   | String?  |                              | お題の説明                   |
+| カラム        | 型      | 制約                  | 意味                           |
+| ------------- | ------- | --------------------- | ------------------------------ |
+| id            | String  | PK                    | 会社 ID                        |
+| name          | String  |                       | 会社名（同じ名前なら同じ会社） |
+| host_id       | String? | UNIQUE, FK → users.id | 今ラウンドのホスト             |
+| topic_title   | String? |                       | ホストが出したお題             |
+| topic_content | String? |                       | お題の説明                     |
 
 ### users（参加者）
 
-| カラム          | 型       | 制約                  | 意味           |
-| --------------- | -------- | --------------------- | -------------- |
-| id              | String   | PK                    | ユーザー ID    |
-| name            | String?  |                       | 表示名         |
-| email           | String?  | UNIQUE                | ログイン用     |
-| email_verified  | DateTime?|                       | 未使用（予約） |
-| image           | String?  |                       | 未使用（予約） |
-| password        | String   |                       | ログイン用     |
-| company_id      | String?  | FK → companies.id     | 所属会社       |
+| カラム         | 型        | 制約              | 意味           |
+| -------------- | --------- | ----------------- | -------------- |
+| id             | String    | PK                | ユーザー ID    |
+| name           | String?   |                   | 表示名         |
+| email          | String?   | UNIQUE            | ログイン用     |
+| email_verified | DateTime? |                   | 未使用（予約） |
+| image          | String?   |                   | 未使用（予約） |
+| password       | String    |                   | ログイン用     |
+| company_id     | String?   | FK → companies.id | 所属会社       |
 
 ### posts（提案）
 
-| カラム      | 型       | 制約                      | 意味                 |
-| ----------- | -------- | ------------------------- | -------------------- |
-| id          | String   | PK                        | 提案 ID              |
-| title       | String   |                           | タイトル             |
-| content     | String   |                           | 本文                 |
-| author_id   | String   | UNIQUE, FK → users.id     | 提案者（1人1件）     |
-| company_id  | String?  | FK → companies.id         | 所属会社             |
-| created_at  | DateTime |                           | 作成日時             |
-| updated_at  | DateTime |                           | 更新日時             |
+| カラム     | 型       | 制約                  | 意味             |
+| ---------- | -------- | --------------------- | ---------------- |
+| id         | String   | PK                    | 提案 ID          |
+| title      | String   |                       | タイトル         |
+| content    | String   |                       | 本文             |
+| author_id  | String   | UNIQUE, FK → users.id | 提案者（1人1件） |
+| company_id | String?  | FK → companies.id     | 所属会社         |
+| created_at | DateTime |                       | 作成日時         |
+| updated_at | DateTime |                       | 更新日時         |
 
 ### votes（投票）
 
-| カラム   | 型     | 制約                         | 意味                         |
-| -------- | ------ | ---------------------------- | ---------------------------- |
-| id       | String | PK                           | 票 ID                        |
-| user_id  | String | FK → users.id                | 投票した人                   |
-| post_id  | String | FK → posts.id                | 投票先の提案                 |
+| カラム  | 型     | 制約          | 意味         |
+| ------- | ------ | ------------- | ------------ |
+| id      | String | PK            | 票 ID        |
+| user_id | String | FK → users.id | 投票した人   |
+| post_id | String | FK → posts.id | 投票先の提案 |
 
 `@@unique([user_id, post_id])` で、同じ提案への二重投票を防ぎます。1人あたり最大2件です。
 
 ### host_nominations（ホスト指名）
 
-| カラム      | 型       | 制約                  | 意味                 |
-| ----------- | -------- | --------------------- | -------------------- |
-| id          | String   | PK                    | 指名 ID              |
-| user_id     | String   | UNIQUE, FK → users.id | 指名した人（1人1票） |
-| nominee_id  | String   | FK → users.id         | 指名された人         |
-| company_id  | String   | FK → companies.id     | 対象の会社           |
-| created_at  | DateTime |                       | 指名日時             |
+| カラム     | 型       | 制約                  | 意味                 |
+| ---------- | -------- | --------------------- | -------------------- |
+| id         | String   | PK                    | 指名 ID              |
+| user_id    | String   | UNIQUE, FK → users.id | 指名した人（1人1票） |
+| nominee_id | String   | FK → users.id         | 指名された人         |
+| company_id | String   | FK → companies.id     | 対象の会社           |
+| created_at | DateTime |                       | 指名日時             |
 
 全員が指名し、最多が1人に決まると `companies.host_id` に入ります。
 
 ### reset_requests（削除申請）
 
-| カラム      | 型       | 制約                  | 意味                     |
-| ----------- | -------- | --------------------- | ------------------------ |
-| id          | String   | PK                    | 申請 ID                  |
-| user_id     | String   | UNIQUE, FK → users.id | 申請した人（1人1回）     |
-| company_id  | String   | FK → companies.id     | 対象の会社               |
-| created_at  | DateTime |                       | 申請日時                 |
+| カラム     | 型       | 制約                  | 意味                 |
+| ---------- | -------- | --------------------- | -------------------- |
+| id         | String   | PK                    | 申請 ID              |
+| user_id    | String   | UNIQUE, FK → users.id | 申請した人（1人1回） |
+| company_id | String   | FK → companies.id     | 対象の会社           |
+| created_at | DateTime |                       | 申請日時             |
 
 会社の人数分揃うと、ホスト・お題・指名・提案・票を消します。
 
 ### round_signals（Realtime 通知）
 
-| カラム      | 型       | 制約              | 意味                                       |
-| ----------- | -------- | ----------------- | ------------------------------------------ |
-| company_id  | String   | PK, FK → companies.id | 対象の会社                             |
-| bumped_at   | DateTime |                   | 最後に状況が変わった時刻                   |
+| カラム     | 型       | 制約                  | 意味                     |
+| ---------- | -------- | --------------------- | ------------------------ |
+| company_id | String   | PK, FK → companies.id | 対象の会社               |
+| bumped_at  | DateTime |                       | 最後に状況が変わった時刻 |
 
 提案や票は載せない。指名・お題・提案・投票・削除申請・新規登録・ログインのたびにこの行だけ更新し、同じ会社のブラウザが状況 API を取り直す。
 
@@ -293,28 +293,15 @@ erDiagram
 
 定期的に API を叩くポーリングは使わない。ダッシュボードは次のときに `/api/company-status` を取り直す。
 
-| きっかけ                         | 内容                                                         |
-| -------------------------------- | ------------------------------------------------------------ |
-| 画面を開いたとき                 | 最初の1回                                                    |
-| タブを前面に戻したとき           | 裏にしていた間の変化を取り込む                               |
-| 自分の操作の直後                 | 指名・お題・提案・投票・削除申請                             |
-| 他メンバーの操作                 | Supabase が `round_signals` の変更を WebSocket で知らせる    |
-| 同じ会社への新規登録・ログイン   | メンバー一覧や提出人数にすぐ反映する                         |
+| きっかけ                       | 内容                                                      |
+| ------------------------------ | --------------------------------------------------------- |
+| 画面を開いたとき               | 最初の1回                                                 |
+| タブを前面に戻したとき         | 裏にしていた間の変化を取り込む                            |
+| 自分の操作の直後               | 指名・お題・提案・投票・削除申請                          |
+| 他メンバーの操作               | Supabase が `round_signals` の変更を WebSocket で知らせる |
+| 同じ会社への新規登録・ログイン | メンバー一覧や提出人数にすぐ反映する                      |
 
 ログインは NextAuth のまま。ブラウザに出すのは公開キーだけで、提案・票・パスワードは Realtime に流れない。
-
-### 環境変数
-
-| 変数                                    | どこで使う     | 意味                                      |
-| --------------------------------------- | -------------- | ----------------------------------------- |
-| `DATABASE_URL`                          | サーバー       | Prisma の通常クエリ（プール 6543）        |
-| `DIRECT_URL`                            | サーバー       | `db push` / migrate（5432）               |
-| `NEXTAUTH_URL`                          | サーバー       | 本番は `https://fast-vote.vercel.app`（末尾スラッシュなし） |
-| `NEXTAUTH_SECRET`                       | サーバー       | JWT 署名                                  |
-| `NEXT_PUBLIC_SUPABASE_URL`              | ブラウザ       | Realtime 接続先                           |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`  | ブラウザ       | 公開キー。`round_signals` の購読だけ      |
-
-Vercel の Production / Preview / Development にも、上の公開キー2つを入れる。
 
 ### RLS
 
