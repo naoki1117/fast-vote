@@ -1,0 +1,59 @@
+/* 画面全体で使う色と、繰り返し出すボタン・カードのクラス */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --accent: #4f46e5;
+  --accent-soft: #eef2ff;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+@layer components {
+  /* コンテンツ幅を揃える外枠 */
+  .page-shell {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-indigo-600 text-white shadow-sm hover:bg-indigo-500;
+  }
+
+  .btn-ghost {
+    @apply btn border border-slate-200 bg-white text-slate-700 hover:bg-slate-50;
+  }
+
+  .nav-item {
+    @apply flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition;
+  }
+
+  .nav-item-active {
+    @apply bg-indigo-600 text-white shadow-sm;
+  }
+
+  .nav-item-idle {
+    @apply text-slate-600 hover:bg-slate-100;
+  }
+}

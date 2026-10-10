@@ -1,0 +1,66 @@
+// Fast Vote のデータ定義。PostgreSQL（Supabase）向け。
+// url は Prisma 5 ではここに env() を書く。Prisma 7 の書き方とは違う。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // 通常クエリ用（プール 6543）
+  directUrl = env("DIRECT_URL")   // db push / migrate 用（5432）
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  password      String
+  // 提案は1人1件。逆向きは Post.author
+  proposal      Post?     @relation("UserProposal")
+  votes         Vote[]
+  // 会社を消すと所属ユーザーも消える
+  company       Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId     String?   @map("company_id")
+
+  @@map("users")
+}
+
+// 各ユーザーが出せる提案は1件まで（authorId がユニーク）
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  author    User     @relation("UserProposal", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String   @unique @map("author_id")
+  votes     Vote[]
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String?  @map("company_id")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("posts")
+}
+
+// ユーザーが提案に投じた票。同じ提案への二重投票は @@unique で防ぐ
+model Vote {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String @map("post_id")
+
+  @@unique([userId, postId])
+  @@map("votes")
+}
+
+model Company {
+  id    String @id @default(cuid())
+  name  String
+  users User[]
+  posts Post[]
+
+  @@map("companies")
+}

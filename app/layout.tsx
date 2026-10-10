@@ -1,0 +1,36 @@
+import type { Metadata } from "next";
+import { Noto_Sans_JP } from "next/font/google";
+import "./globals.css";
+import Header from "./components/Header";
+import { AuthProvider } from "./lib/session-provider";
+
+// 日本語本文向けのフォント。latin サブセットで読み込みを抑える
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+export const metadata: Metadata = {
+  title: "Fast Vote",
+  description: "提案にすばやく投票できるアプリ",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ja">
+      <body className={`${notoSansJP.className} min-h-screen antialiased`}>
+        {/* セッションを全ページで共有し、ヘッダーのログイン表示を揃える */}
+        <AuthProvider>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1">{children}</main>
+          </div>
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
