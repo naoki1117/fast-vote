@@ -88,7 +88,7 @@ const Page = () => {
                   {user?.companyName ?? "会社未所属"}
                 </p>
                 <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-                  書いて、揃えて、票で決める。
+                  全員の提案を見て、すばやく投票する。
                 </h1>
                 <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
                   {user?.name ?? "ゲスト"}さん。毎回ホストを指名し、ホストがお題を出します。
