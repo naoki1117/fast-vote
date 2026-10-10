@@ -26,7 +26,7 @@ const empty: CompanyStatusPayload = {
 function leadingNomineeIds(counts: Map<string, number>) {
   let max = 0;
   const leaders: string[] = [];
-  for (const [id, count] of counts) {
+  for (const [id, count] of Array.from(counts.entries())) {
     if (count > max) {
       max = count;
       leaders.length = 0;
