@@ -3,6 +3,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import { UserType } from "@/app/types/user";
 import prisma from "./prisma";
+import { bumpRoundSignal } from "./round-signal";
 
 // セッションの有効期限（2時間）。秒で渡す必要がある
 const twoHourInSeconds = 120 * 60;
@@ -31,6 +32,10 @@ export const nextAuthOptions: NextAuthOptions = {
           user.email !== credentials?.email
         ) {
           return null;
+        }
+
+        if (user.companyId) {
+          await bumpRoundSignal(user.companyId);
         }
 
         // JWT / session に載せる最小限の情報。会社名はヘッダー表示用

@@ -1,4 +1,5 @@
 import prisma from "@/app/lib/prisma";
+import { bumpRoundSignal } from "@/app/lib/round-signal";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     // 会社の作成とユーザー作成をまとめて行い、途中失敗ならどちらも残さない
-    await prisma.$transaction(async (tx) => {
+    const companyId = await prisma.$transaction(async (tx) => {
       const existing = await tx.user.findUnique({
         where: { email: trimmedEmail },
       });
@@ -52,7 +53,11 @@ export async function POST(req: Request) {
           companyId: company.id,
         },
       });
+
+      return company.id;
     });
+
+    await bumpRoundSignal(companyId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {
