@@ -3,7 +3,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import { UserType } from "@/app/types/user";
 import prisma from "./prisma";
-import { bumpRoundSignal } from "./round-signal";
+import { markUserAbsent, markUserPresent } from "./presence";
 
 // セッションの有効期限（2時間）。秒で渡す必要がある
 const twoHourInSeconds = 120 * 60;
@@ -34,9 +34,7 @@ export const nextAuthOptions: NextAuthOptions = {
           return null;
         }
 
-        if (user.companyId) {
-          await bumpRoundSignal(user.companyId);
-        }
+        await markUserPresent(user.id, user.companyId);
 
         // JWT / session に載せる最小限の情報。会社名はヘッダー表示用
         return {
@@ -73,6 +71,22 @@ export const nextAuthOptions: NextAuthOptions = {
     maxAge: twoHourInSeconds,
   },
   adapter: PrismaAdapter(prisma),
+
+  events: {
+    async signOut({ token }) {
+      const email = token?.email;
+      if (typeof email !== "string" || !email) {
+        return;
+      }
+      const leaving = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true, companyId: true },
+      });
+      if (leaving) {
+        await markUserAbsent(leaving.id, leaving.companyId);
+      }
+    },
+  },
 
   secret: process.env.NEXTAUTH_SECRET,
 };

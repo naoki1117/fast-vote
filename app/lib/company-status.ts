@@ -1,4 +1,5 @@
 import prisma from "@/app/lib/prisma";
+import { markUserPresent } from "@/app/lib/presence";
 import type { CompanyStatusPayload, RoundPhase } from "@/app/types/company-status";
 
 const empty: CompanyStatusPayload = {
@@ -46,6 +47,14 @@ function leadingNomineeIds(counts: Map<string, number>) {
 export async function getCompanyStatusByEmail(
   email: string
 ): Promise<CompanyStatusPayload | null> {
+  const self = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, companyId: true, isPresent: true },
+  });
+  if (self && !self.isPresent) {
+    await markUserPresent(self.id, self.companyId);
+  }
+
   const user = await prisma.user.findUnique({
     where: { email },
     include: {
@@ -53,6 +62,7 @@ export async function getCompanyStatusByEmail(
         include: {
           host: { select: { id: true, name: true } },
           users: {
+            where: { isPresent: true },
             select: {
               id: true,
               name: true,
@@ -106,8 +116,15 @@ export async function getCompanyStatusByEmail(
   const postByAuthor = new Map(posts.map((post) => [post.author.id, post.title]));
   const votedUserIds = new Set(votes.map((vote) => vote.userId));
   const resetUserIds = new Set(resetRequests.map((req) => req.userId));
+  const presentIds = new Set(memberIds);
+  const presentNominations = nominations.filter((nomination) =>
+    presentIds.has(nomination.userId)
+  );
   const nominationCounts = new Map<string, number>();
-  for (const nomination of nominations) {
+  for (const nomination of presentNominations) {
+    if (!presentIds.has(nomination.nomineeId)) {
+      continue;
+    }
     nominationCounts.set(
       nomination.nomineeId,
       (nominationCounts.get(nomination.nomineeId) ?? 0) + 1
@@ -139,7 +156,7 @@ export async function getCompanyStatusByEmail(
   const { leaders } = leadingNomineeIds(nominationCounts);
   const hostTied =
     !user.company.hostId &&
-    nominations.length === members.length &&
+    presentNominations.length === members.length &&
     members.length > 0 &&
     leaders.length > 1;
 
@@ -160,8 +177,8 @@ export async function getCompanyStatusByEmail(
     members,
     submittedCount,
     votedCount,
-    resetRequestCount: resetRequests.length,
-    nominatedCount: nominations.length,
+    resetRequestCount: resetRequests.filter((req) => presentIds.has(req.userId)).length,
+    nominatedCount: presentNominations.length,
     totalCount: members.length,
     phase,
     votingOpen,
@@ -182,10 +199,11 @@ export async function getCompanyStatusByEmail(
 
 export { leadingNomineeIds };
 
-/** 提案・票・指名・お題・ホストを消す。ユーザーと会社は残す */
+/** 提案・票・指名・お題・ホスト・チャットを消す。ユーザーと会社は残す */
 export async function resetCompanyRound(companyId: string) {
   await prisma.$transaction([
     prisma.post.deleteMany({ where: { companyId } }),
+    prisma.message.deleteMany({ where: { companyId } }),
     prisma.resetRequest.deleteMany({ where: { companyId } }),
     prisma.hostNomination.deleteMany({ where: { companyId } }),
     prisma.company.update({

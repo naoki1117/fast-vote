@@ -21,17 +21,17 @@ const Header: FC = () => {
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
-      <nav className="page-shell flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white">
+      <nav className="page-shell flex h-14 items-center justify-between gap-2 sm:h-16">
+        <Link href="/" className="flex min-w-0 items-center gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white sm:h-9 sm:w-9">
             FV
           </span>
-          <span className="text-lg font-bold tracking-tight text-slate-900">
+          <span className="truncate text-base font-bold tracking-tight text-slate-900 sm:text-lg">
             Fast Vote
           </span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {!ready ? (
             <div className="h-9 w-36 animate-pulse rounded-full bg-slate-100" />
           ) : session ? (
@@ -55,8 +55,11 @@ const Header: FC = () => {
                 </span>
               </Link>
               <button
-                className="btn-ghost py-2 text-xs sm:text-sm"
-                onClick={() => signOut({ callbackUrl: "/" })}
+                className="btn-ghost px-2.5 py-2 text-xs sm:px-4 sm:text-sm"
+                onClick={async () => {
+                  await fetch("/api/presence-leave", { method: "POST" });
+                  await signOut({ callbackUrl: "/" });
+                }}
               >
                 ログアウト
               </button>

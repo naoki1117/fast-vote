@@ -4,7 +4,7 @@ const Welcome = () => {
     <div className="space-y-8 pt-8 lg:pt-16">
       <div className="space-y-4">
         <p className="text-sm font-medium text-indigo-600">Fast Vote</p>
-        <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl">
+        <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
           全員の提案を見て、
           <br />
           すばやく投票。

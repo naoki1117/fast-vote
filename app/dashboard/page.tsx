@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import CompanyChat from "../components/CompanyChat";
 import CompanyStatus from "../components/CompanyStatus";
 import HostRound from "../components/HostRound";
 import MyProposal from "../components/MyProposal";
@@ -31,11 +32,9 @@ const navItems: { key: ViewKey; label: string; hint: string }[] = [
 const Page = () => {
   const { data: session, status } = useSession();
   const user = session?.user;
-  // 最初に提案提出へ。未提出だと投票が始まらないため
   const [view, setView] = useState<ViewKey>("host");
   const [mounted, setMounted] = useState(false);
 
-  // サーバー HTML とクライアントのセッション表示が食い違う hydration エラーを避ける
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -44,85 +43,88 @@ const Page = () => {
     return <PageLoading />;
   }
 
-  // 未ログインは middleware がトップへ戻す。その間の空白を防ぐ
   if (status !== "authenticated") {
     return <PageLoading label="ログイン画面へ移動します..." />;
   }
 
   return (
     <CompanyStatusProvider>
-    <div className="page-shell space-y-6 py-6 sm:py-8">
-      <StatusBanner />
-      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside className="card h-fit p-3 lg:sticky lg:top-24">
-          <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            メニュー
-          </p>
-          <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                className={`nav-item min-w-[9.5rem] lg:min-w-0 ${
-                  view === item.key ? "nav-item-active" : "nav-item-idle"
-                }`}
-                onClick={() => setView(item.key)}
-              >
-                <span>
-                  <span className="block">{item.label}</span>
-                  <span
-                    className={`hidden text-xs font-normal lg:block ${
-                      view === item.key ? "text-indigo-100" : "text-slate-400"
-                    }`}
-                  >
-                    {item.hint}
-                  </span>
-                </span>
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        <section className="min-w-0">
-          {view === "home" && (
-            <div className="space-y-6">
-              <div className="card p-6 sm:p-8">
-                <p className="text-sm font-medium text-indigo-600">
-                  {user?.companyName ?? "会社未所属"}
-                </p>
-                <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-                  全員の提案を見て、すばやく投票する。
-                </h1>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
-                  {user?.name ?? "ゲスト"}さん。毎回ホストを指名し、ホストがお題を出します。
-                  提案は1人1件です。全員が提出すると投票を開始できます。
-                  投票は1件または2件で、送信後は変更できません。
-                  全員の投票が完了したあと、全員が削除申請するとホスト・お題・提案・票が初期化されます。
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {navItems
-                  .filter((item) => item.key !== "home")
-                  .map((item) => (
-                    <button
-                      key={item.key}
-                      onClick={() => setView(item.key)}
-                      className="card p-5 text-left transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md"
+      <div className="mx-auto w-full max-w-7xl space-y-4 overflow-x-hidden px-4 py-4 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8">
+        <StatusBanner />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[200px_minmax(0,1fr)_minmax(260px,320px)]">
+          <aside className="card min-w-0 p-2 sm:p-3 lg:sticky lg:top-24 lg:h-fit">
+            <p className="hidden px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider text-slate-400 lg:block">
+              メニュー
+            </p>
+            <nav className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:flex lg:flex-col">
+              {navItems.map((item) => (
+                <button
+                  key={item.key}
+                  className={`nav-item min-w-0 px-2 py-2 sm:px-3 ${
+                    view === item.key ? "nav-item-active" : "nav-item-idle"
+                  }`}
+                  onClick={() => setView(item.key)}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate">{item.label}</span>
+                    <span
+                      className={`hidden text-xs font-normal lg:block ${
+                        view === item.key ? "text-indigo-100" : "text-slate-400"
+                      }`}
                     >
-                      <h2 className="font-semibold text-slate-900">{item.label}</h2>
-                      <p className="mt-1 text-sm text-slate-500">{item.hint}</p>
-                    </button>
-                  ))}
+                      {item.hint}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          <section className="min-w-0 overflow-x-hidden">
+            {view === "home" && (
+              <div className="space-y-6">
+                <div className="card p-5 sm:p-8">
+                  <p className="text-sm font-medium text-indigo-600">
+                    {user?.companyName ?? "会社未所属"}
+                  </p>
+                  <h1 className="mt-2 text-xl font-bold text-slate-900 sm:text-2xl lg:text-3xl">
+                    全員の提案を見て、すばやく投票する。
+                  </h1>
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                    {user?.name ?? "ゲスト"}さん。毎回ホストを指名し、ホストがお題を出します。
+                    提案は1人1件です。全員が提出すると投票を開始できます。
+                    投票は1件または2件で、送信後は変更できません。
+                    全員の投票が完了したあと、全員が削除申請するとホスト・お題・提案・票・チャットが初期化されます。
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {navItems
+                    .filter((item) => item.key !== "home")
+                    .map((item) => (
+                      <button
+                        key={item.key}
+                        onClick={() => setView(item.key)}
+                        className="card p-4 text-left transition hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md sm:p-5"
+                      >
+                        <h2 className="font-semibold text-slate-900">{item.label}</h2>
+                        <p className="mt-1 text-sm text-slate-500">{item.hint}</p>
+                      </button>
+                    ))}
+                </div>
               </div>
-            </div>
-          )}
-          {view === "host" && <HostRound />}
-          {view === "myProposal" && <MyProposal />}
-          {view === "companyStatus" && <CompanyStatus />}
-          {view === "proposals" && <ProposalList />}
-          {view === "voteResults" && <VoteResults />}
-        </section>
+            )}
+            {view === "host" && <HostRound />}
+            {view === "myProposal" && <MyProposal />}
+            {view === "companyStatus" && <CompanyStatus />}
+            {view === "proposals" && <ProposalList />}
+            {view === "voteResults" && <VoteResults />}
+          </section>
+
+          <div className="min-w-0 lg:col-span-2 xl:col-span-1 xl:col-start-3 xl:row-start-1">
+            <CompanyChat />
+          </div>
+        </div>
       </div>
-    </div>
     </CompanyStatusProvider>
   );
 };

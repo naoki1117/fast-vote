@@ -16,6 +16,7 @@
 html,
 body {
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -30,7 +31,7 @@ body {
   }
 
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply min-w-0 break-words rounded-2xl border border-slate-200 bg-white shadow-sm;
   }
 
   .btn {

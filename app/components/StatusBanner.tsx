@@ -55,7 +55,7 @@ export default function StatusBanner() {
         <div className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950">
           <p>全員の投票が終わりました。結果は「得票（上位5）」で確認できます。</p>
           <p className="text-indigo-800">
-            次の回に進むには、メンバー全員の削除申請が必要です。揃った時点でホスト・お題・提案・票は消えます。アカウントは残ります。
+            次の回に進むには、メンバー全員の削除申請が必要です。揃った時点でホスト・お題・提案・票・チャットは消えます。アカウントは残ります。
           </p>
           <p>
             削除申請 {status.resetRequestCount} / {status.totalCount}

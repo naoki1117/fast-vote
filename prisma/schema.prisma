@@ -25,9 +25,12 @@ model User {
   hostedCompany Company?  @relation("CompanyHost")
   nominationsGiven    HostNomination[] @relation("NominationBy")
   nominationsReceived HostNomination[] @relation("NominationFor")
+  messages            Message[]
   // 会社を消すと所属ユーザーも消える
   company       Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId     String?   @map("company_id")
+  // ログイン中だけラウンドのメンバーに含める。ログアウトで外す
+  isPresent     Boolean   @default(false) @map("is_present")
 
   @@map("users")
 }
@@ -46,6 +49,20 @@ model Post {
   updatedAt DateTime @updatedAt
 
   @@map("posts")
+}
+
+// 同じ会社のメンバーが作業中に話すチャット。1人何件でも可
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String   @map("company_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([companyId, createdAt])
+  @@map("messages")
 }
 
 // ユーザーが提案に投じた票。同じ提案への二重投票は @@unique で防ぐ
@@ -67,6 +84,7 @@ model Company {
   posts           Post[]
   resetRequests   ResetRequest[]
   hostNominations HostNomination[]
+  messages        Message[]
   roundSignal     RoundSignal?
   host            User?            @relation("CompanyHost", fields: [hostId], references: [id], onDelete: SetNull)
   hostId          String?          @unique @map("host_id")

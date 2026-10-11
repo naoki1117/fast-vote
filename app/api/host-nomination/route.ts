@@ -21,7 +21,11 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      include: { company: { include: { users: { select: { id: true } } } } },
+      include: {
+        company: {
+          include: { users: { where: { isPresent: true }, select: { id: true } } },
+        },
+      },
     });
     if (!user?.company) {
       return NextResponse.json({ error: "会社に所属していません。" }, { status: 400 });

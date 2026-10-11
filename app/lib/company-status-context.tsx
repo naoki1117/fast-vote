@@ -16,6 +16,8 @@ type CompanyStatusContextValue = {
   status: CompanyStatusPayload | null;
   loaded: boolean;
   failed: boolean;
+  /** Realtime の合図回数。チャットの取り直しに使う */
+  signalSeq: number;
   refresh: () => Promise<void>;
 };
 
@@ -26,6 +28,7 @@ export function CompanyStatusProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<CompanyStatusPayload | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [signalSeq, setSignalSeq] = useState(0);
   const companyId = status?.companyId ?? null;
 
   const refresh = useCallback(async () => {
@@ -87,6 +90,7 @@ export function CompanyStatusProvider({ children }: { children: ReactNode }) {
           filter: `company_id=eq.${companyId}`,
         },
         () => {
+          setSignalSeq((n) => n + 1);
           void refreshRef.current();
         }
       )
@@ -102,7 +106,7 @@ export function CompanyStatusProvider({ children }: { children: ReactNode }) {
   }, [companyId]);
 
   return (
-    <CompanyStatusContext.Provider value={{ status, loaded, failed, refresh }}>
+    <CompanyStatusContext.Provider value={{ status, loaded, failed, signalSeq, refresh }}>
       {children}
     </CompanyStatusContext.Provider>
   );

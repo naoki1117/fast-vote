@@ -218,7 +218,7 @@ const ProposalList = () => {
       )}
 
       {!locked && (
-        <div className="sticky bottom-4 flex flex-col items-stretch gap-3 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-panel backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+        <div className="sticky bottom-4 flex min-w-0 flex-col items-stretch gap-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-panel backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-4">
           <p className="text-sm text-slate-500">
             1件だけでも送れます。送ったあとは変更できません。
           </p>
