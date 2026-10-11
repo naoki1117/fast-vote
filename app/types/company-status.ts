@@ -22,6 +22,8 @@ export type CompanyStatusPayload = {
   submittedCount: number;
   votedCount: number;
   resetRequestCount: number;
+  /** 削除申請が必要な人数（いまログイン中で、この回に提案した人） */
+  resetNeededCount: number;
   nominatedCount: number;
   totalCount: number;
   phase: RoundPhase;

@@ -9,6 +9,7 @@ const empty: CompanyStatusPayload = {
   submittedCount: 0,
   votedCount: 0,
   resetRequestCount: 0,
+  resetNeededCount: 0,
   nominatedCount: 0,
   totalCount: 0,
   phase: "nominate",
@@ -86,7 +87,7 @@ export async function getCompanyStatusByEmail(
   const companyId = user.company.id;
   const memberIds = user.company.users.map((member) => member.id);
 
-  const [posts, votes, resetRequests, myVotes, nominations] = await Promise.all([
+  const [posts, votes, roundVotes, resetRequests, myVotes, nominations] = await Promise.all([
     prisma.post.findMany({
       where: { companyId },
       select: {
@@ -98,6 +99,10 @@ export async function getCompanyStatusByEmail(
     prisma.vote.findMany({
       where: { userId: { in: memberIds } },
       select: { userId: true },
+    }),
+    prisma.vote.findMany({
+      where: { post: { companyId } },
+      select: { id: true },
     }),
     prisma.resetRequest.findMany({
       where: { companyId },
@@ -147,12 +152,21 @@ export async function getCompanyStatusByEmail(
     };
   });
 
-  const submittedCount = members.filter((member) => member.submitted).length;
+  const submitters = members.filter((member) => member.submitted);
+  const submittedCount = submitters.length;
   const votedCount = members.filter((member) => member.voted).length;
   const topicReady = Boolean(user.company.topicTitle && user.company.topicContent);
+  const hasAnyVote = roundVotes.length > 0;
+  // 投票開始後に提案していない人がログインしても、投票を巻き戻さない
   const votingOpen =
-    topicReady && members.length > 0 && submittedCount === members.length;
-  const votingComplete = votingOpen && votedCount === members.length;
+    topicReady &&
+    members.length > 0 &&
+    (submittedCount === members.length || hasAnyVote);
+  const submittersVoted =
+    submitters.length > 0 && submitters.every((member) => member.voted);
+  const votingComplete = votingOpen && submittersVoted;
+  const resetNeededCount = submitters.length;
+  const resetRequestCount = submitters.filter((member) => member.resetRequested).length;
   const { leaders } = leadingNomineeIds(nominationCounts);
   const hostTied =
     !user.company.hostId &&
@@ -177,7 +191,8 @@ export async function getCompanyStatusByEmail(
     members,
     submittedCount,
     votedCount,
-    resetRequestCount: resetRequests.filter((req) => presentIds.has(req.userId)).length,
+    resetRequestCount,
+    resetNeededCount,
     nominatedCount: presentNominations.length,
     totalCount: members.length,
     phase,
@@ -199,20 +214,22 @@ export async function getCompanyStatusByEmail(
 
 export { leadingNomineeIds };
 
-/** 提案・票・指名・お題・ホスト・チャットを消す。ユーザーと会社は残す */
+/**
+ * 提案・票・指名・お題・ホスト・チャットを消す。ユーザーと会社は残す。
+ * Supabase の PgBouncer（6543）では $transaction が待ち続けて Vercel が 504 になるため、
+ * トランザクションは使わず順に消す。票は Post の Cascade で消える。
+ */
 export async function resetCompanyRound(companyId: string) {
-  await prisma.$transaction([
-    prisma.post.deleteMany({ where: { companyId } }),
-    prisma.message.deleteMany({ where: { companyId } }),
-    prisma.resetRequest.deleteMany({ where: { companyId } }),
-    prisma.hostNomination.deleteMany({ where: { companyId } }),
-    prisma.company.update({
-      where: { id: companyId },
-      data: {
-        hostId: null,
-        topicTitle: null,
-        topicContent: null,
-      },
-    }),
-  ]);
+  await prisma.post.deleteMany({ where: { companyId } });
+  await prisma.message.deleteMany({ where: { companyId } });
+  await prisma.resetRequest.deleteMany({ where: { companyId } });
+  await prisma.hostNomination.deleteMany({ where: { companyId } });
+  await prisma.company.update({
+    where: { id: companyId },
+    data: {
+      hostId: null,
+      topicTitle: null,
+      topicContent: null,
+    },
+  });
 }

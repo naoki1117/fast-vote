@@ -5,6 +5,8 @@ import { bumpRoundSignal } from "@/app/lib/round-signal";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
+export const maxDuration = 30;
+
 /** 投票が全員終わったあと、削除申請する。全員揃ったらラウンドを初期化する */
 export async function POST() {
   try {
@@ -39,11 +41,15 @@ export async function POST() {
       update: {},
     });
 
-    const after = await getCompanyStatusByEmail(email);
+    const neededIds = status.members
+      .filter((member) => member.submitted)
+      .map((member) => member.id);
+    const requestedIds = new Set(
+      status.members.filter((member) => member.resetRequested).map((member) => member.id)
+    );
+    requestedIds.add(user.id);
     const everyoneAsked =
-      after &&
-      after.totalCount > 0 &&
-      after.resetRequestCount === after.totalCount;
+      neededIds.length > 0 && neededIds.every((id) => requestedIds.has(id));
 
     if (everyoneAsked) {
       await resetCompanyRound(user.companyId);
@@ -56,8 +62,8 @@ export async function POST() {
     return NextResponse.json({
       ok: true,
       reset: false,
-      resetRequestCount: after?.resetRequestCount ?? status.resetRequestCount + 1,
-      totalCount: after?.totalCount ?? status.totalCount,
+      resetRequestCount: requestedIds.size,
+      totalCount: neededIds.length || status.resetNeededCount,
     });
   } catch (error) {
     console.error("Error requesting reset:", error);

@@ -13,17 +13,40 @@ export default function StatusBanner() {
     return null;
   }
 
+  const needed = status.resetNeededCount || status.totalCount;
+  const allAsked = needed > 0 && status.resetRequestCount >= needed;
+  const iSubmitted = Boolean(status.members.find((member) => member.isMe)?.submitted);
+  const canRetryReset = status.iRequestedReset && allAsked;
+
   const requestReset = async () => {
     setError("");
     setBusy(true);
-    const res = await fetch("/api/reset-request", { method: "POST" });
-    const data = await res.json();
-    setBusy(false);
-    if (!res.ok) {
-      setError(data.error ?? "削除申請できませんでした。");
-      return;
+    try {
+      const res = await fetch("/api/reset-request", { method: "POST" });
+      const raw = await res.text();
+      let data: { error?: string; reset?: boolean } = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = {
+          error:
+            res.status === 504
+              ? "サーバーの応答が時間切れになりました。もう一度「初期化をやり直す」を押してください。"
+              : "削除申請できませんでした。",
+        };
+      }
+      if (!res.ok) {
+        setError(data.error ?? "削除申請できませんでした。");
+        await refresh();
+        return;
+      }
+      await refresh();
+    } catch {
+      setError("通信に失敗しました。もう一度試してください。");
+      await refresh();
+    } finally {
+      setBusy(false);
     }
-    await refresh();
   };
 
   return (
@@ -55,25 +78,40 @@ export default function StatusBanner() {
         <div className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-950">
           <p>全員の投票が終わりました。結果は「得票（上位5）」で確認できます。</p>
           <p className="text-indigo-800">
-            次の回に進むには、メンバー全員の削除申請が必要です。揃った時点でホスト・お題・提案・票・チャットは消えます。アカウントは残ります。
+            次の回に進むには、この回に提案したメンバー全員の削除申請が必要です。揃った時点でホスト・お題・提案・票・チャットは消えます。アカウントは残ります。
           </p>
           <p>
-            削除申請 {status.resetRequestCount} / {status.totalCount}
+            削除申請 {status.resetRequestCount} / {status.resetNeededCount || status.totalCount}
             {status.iRequestedReset ? "（申請済み）" : ""}
           </p>
+          {status.members.some((member) => member.submitted && !member.resetRequested) ? (
+            <p className="text-indigo-800">
+              未申請:{" "}
+              {status.members
+                .filter((member) => member.submitted && !member.resetRequested)
+                .map((member) => member.name ?? "未設定")
+                .join("、")}
+            </p>
+          ) : null}
           {error && <p className="text-red-600">{error}</p>}
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={busy || status.iRequestedReset}
-            onClick={requestReset}
-          >
-            {status.iRequestedReset
-              ? "削除申請済み"
-              : busy
+          {iSubmitted ? (
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={busy || (status.iRequestedReset && !canRetryReset)}
+              onClick={requestReset}
+            >
+              {busy
                 ? "送信中..."
-                : "削除申請する"}
-          </button>
+                : canRetryReset
+                  ? "初期化をやり直す"
+                  : status.iRequestedReset
+                    ? "削除申請済み"
+                    : "削除申請する"}
+            </button>
+          ) : (
+            <p className="text-indigo-800">提案したメンバーの申請が揃うと次の回に進みます。</p>
+          )}
         </div>
       )}
     </div>
