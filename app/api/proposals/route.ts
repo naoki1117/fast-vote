@@ -59,9 +59,9 @@ export async function POST(req: Request) {
     const trimmedTitle = String(title ?? "").trim();
     const trimmedContent = String(content ?? "").trim();
 
-    if (!trimmedTitle || !trimmedContent) {
+    if (!trimmedTitle) {
       return NextResponse.json(
-        { error: "タイトルと内容を入力してください。" },
+        { error: "タイトルを入力してください。" },
         { status: 400 }
       );
     }

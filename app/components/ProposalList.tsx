@@ -3,7 +3,9 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useCompanyStatus } from "@/app/lib/company-status-context";
+import { getNextAction } from "@/app/lib/next-action";
 import CompanyStatus from "./CompanyStatus";
+import NextStepMark from "./NextStepMark";
 
 /** /api/proposals の1件。author.email で自分の提案かを判定する */
 type Proposal = {
@@ -31,6 +33,7 @@ const ProposalList = () => {
   const phase = status?.phase ?? "nominate";
   const hasVoted = Boolean(status?.iHaveVoted);
   const locked = hasVoted || votingComplete;
+  const nextAction = getNextAction(status);
 
   const handleCheckboxChange = (id: string) => {
     if (locked) {
@@ -222,9 +225,12 @@ const ProposalList = () => {
           <p className="text-sm text-slate-500">
             1件だけでも送れます。送ったあとは変更できません。
           </p>
-          <button type="submit" className="btn-primary" disabled={submitting}>
-            投票する
-          </button>
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              投票する
+            </button>
+            {nextAction?.key === "vote" ? <NextStepMark /> : null}
+          </div>
         </div>
       )}
     </form>

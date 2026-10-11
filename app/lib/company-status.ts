@@ -1,4 +1,5 @@
 import prisma from "@/app/lib/prisma";
+import { majorityNeeded } from "@/app/lib/majority";
 import { markUserPresent } from "@/app/lib/presence";
 import type { CompanyStatusPayload, RoundPhase } from "@/app/types/company-status";
 
@@ -17,6 +18,13 @@ const empty: CompanyStatusPayload = {
   votingComplete: false,
   iHaveVoted: false,
   iRequestedReset: false,
+  iRequestedAdvanceNominate: false,
+  iRequestedAdvancePropose: false,
+  advanceNominateCount: 0,
+  advanceProposeCount: 0,
+  advanceNeededCount: 0,
+  skipNominate: false,
+  skipPropose: false,
   iAmHost: false,
   myNomineeId: null,
   myVotedPostIds: [],
@@ -39,6 +47,48 @@ function leadingNomineeIds(counts: Map<string, number>) {
     }
   }
   return { max, leaders };
+}
+
+/** 指名が全員揃った、または欠席待ちをスキップしたとき、最多が1人ならホストにする */
+export async function tryAssignHost(companyId: string, allowPartial: boolean) {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: {
+      hostId: true,
+      users: { where: { isPresent: true }, select: { id: true } },
+      hostNominations: { select: { userId: true, nomineeId: true } },
+    },
+  });
+  if (!company || company.hostId) {
+    return { assigned: Boolean(company?.hostId), tied: false };
+  }
+
+  const presentIds = new Set(company.users.map((member) => member.id));
+  const nominations = company.hostNominations.filter(
+    (nomination) =>
+      presentIds.has(nomination.userId) && presentIds.has(nomination.nomineeId)
+  );
+  const allIn = presentIds.size > 0 && nominations.length === presentIds.size;
+  if (!allIn && !allowPartial) {
+    return { assigned: false, tied: false };
+  }
+  if (nominations.length === 0) {
+    return { assigned: false, tied: false };
+  }
+
+  const counts = new Map<string, number>();
+  for (const nomination of nominations) {
+    counts.set(nomination.nomineeId, (counts.get(nomination.nomineeId) ?? 0) + 1);
+  }
+  const { leaders } = leadingNomineeIds(counts);
+  if (leaders.length === 1) {
+    await prisma.company.update({
+      where: { id: companyId },
+      data: { hostId: leaders[0] },
+    });
+    return { assigned: true, tied: false };
+  }
+  return { assigned: false, tied: true };
 }
 
 /**
@@ -87,7 +137,11 @@ export async function getCompanyStatusByEmail(
   const companyId = user.company.id;
   const memberIds = user.company.users.map((member) => member.id);
 
-  const [posts, votes, roundVotes, resetRequests, myVotes, nominations] = await Promise.all([
+  const skipNominate = user.company.skipNominate;
+  const skipPropose = user.company.skipPropose;
+
+  const [posts, votes, roundVotes, resetRequests, myVotes, nominations, advanceRequests] =
+    await Promise.all([
     prisma.post.findMany({
       where: { companyId },
       select: {
@@ -115,6 +169,10 @@ export async function getCompanyStatusByEmail(
     prisma.hostNomination.findMany({
       where: { companyId },
       select: { userId: true, nomineeId: true },
+    }),
+    prisma.advanceRequest.findMany({
+      where: { companyId },
+      select: { userId: true, stage: true },
     }),
   ]);
 
@@ -157,21 +215,31 @@ export async function getCompanyStatusByEmail(
   const votedCount = members.filter((member) => member.voted).length;
   const topicReady = Boolean(user.company.topicTitle && user.company.topicContent);
   const hasAnyVote = roundVotes.length > 0;
+  const presentAdvance = advanceRequests.filter((req) => presentIds.has(req.userId));
+  const advanceNominateCount = presentAdvance.filter((req) => req.stage === "nominate")
+    .length;
+  const advanceProposeCount = presentAdvance.filter((req) => req.stage === "propose")
+    .length;
   // 投票開始後に提案していない人がログインしても、投票を巻き戻さない
   const votingOpen =
     topicReady &&
     members.length > 0 &&
-    (submittedCount === members.length || hasAnyVote);
+    (submittedCount === members.length ||
+      hasAnyVote ||
+      (skipPropose && submittedCount > 0));
   const submittersVoted =
     submitters.length > 0 && submitters.every((member) => member.voted);
   const votingComplete = votingOpen && submittersVoted;
   const resetNeededCount = submitters.length;
   const resetRequestCount = submitters.filter((member) => member.resetRequested).length;
   const { leaders } = leadingNomineeIds(nominationCounts);
+  const nominationsClosed =
+    members.length > 0 &&
+    (presentNominations.length === members.length || skipNominate);
   const hostTied =
     !user.company.hostId &&
-    presentNominations.length === members.length &&
-    members.length > 0 &&
+    nominationsClosed &&
+    presentNominations.length > 0 &&
     leaders.length > 1;
 
   let phase: RoundPhase = "nominate";
@@ -200,6 +268,17 @@ export async function getCompanyStatusByEmail(
     votingComplete,
     iHaveVoted: members.find((member) => member.isMe)?.voted ?? false,
     iRequestedReset: resetUserIds.has(user.id),
+    iRequestedAdvanceNominate: presentAdvance.some(
+      (req) => req.stage === "nominate" && req.userId === user.id
+    ),
+    iRequestedAdvancePropose: presentAdvance.some(
+      (req) => req.stage === "propose" && req.userId === user.id
+    ),
+    advanceNominateCount,
+    advanceProposeCount,
+    advanceNeededCount: majorityNeeded(members.length),
+    skipNominate,
+    skipPropose,
     iAmHost: user.company.hostId === user.id,
     myNomineeId: nominations.find((nomination) => nomination.userId === user.id)?.nomineeId ?? null,
     myVotedPostIds: myVotes.map((vote) => vote.postId),
@@ -223,6 +302,7 @@ export async function resetCompanyRound(companyId: string) {
   await prisma.post.deleteMany({ where: { companyId } });
   await prisma.message.deleteMany({ where: { companyId } });
   await prisma.resetRequest.deleteMany({ where: { companyId } });
+  await prisma.advanceRequest.deleteMany({ where: { companyId } });
   await prisma.hostNomination.deleteMany({ where: { companyId } });
   await prisma.company.update({
     where: { id: companyId },
@@ -230,6 +310,8 @@ export async function resetCompanyRound(companyId: string) {
       hostId: null,
       topicTitle: null,
       topicContent: null,
+      skipNominate: false,
+      skipPropose: false,
     },
   });
 }

@@ -8,6 +8,7 @@ ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE host_nominations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reset_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE advance_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE round_signals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
@@ -17,6 +18,7 @@ REVOKE ALL ON TABLE votes FROM anon, authenticated;
 REVOKE ALL ON TABLE companies FROM anon, authenticated;
 REVOKE ALL ON TABLE host_nominations FROM anon, authenticated;
 REVOKE ALL ON TABLE reset_requests FROM anon, authenticated;
+REVOKE ALL ON TABLE advance_requests FROM anon, authenticated;
 REVOKE ALL ON TABLE messages FROM anon, authenticated;
 
 DROP POLICY IF EXISTS round_signals_select ON round_signals;

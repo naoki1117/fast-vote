@@ -22,6 +22,7 @@ model User {
   proposal      Post?     @relation("UserProposal")
   votes         Vote[]
   resetRequest  ResetRequest?
+  advanceRequests AdvanceRequest[]
   hostedCompany Company?  @relation("CompanyHost")
   nominationsGiven    HostNomination[] @relation("NominationBy")
   nominationsReceived HostNomination[] @relation("NominationFor")
@@ -83,6 +84,7 @@ model Company {
   users           User[]
   posts           Post[]
   resetRequests   ResetRequest[]
+  advanceRequests AdvanceRequest[]
   hostNominations HostNomination[]
   messages        Message[]
   roundSignal     RoundSignal?
@@ -90,6 +92,9 @@ model Company {
   hostId          String?          @unique @map("host_id")
   topicTitle      String?          @map("topic_title")
   topicContent    String?          @map("topic_content")
+  // 欠席者を待たず、半数以上の申請で指名／提案を締め切る
+  skipNominate    Boolean          @default(false) @map("skip_nominate")
+  skipPropose     Boolean          @default(false) @map("skip_propose")
 
   @@map("companies")
 }
@@ -106,6 +111,21 @@ model HostNomination {
   createdAt DateTime @default(now())
 
   @@map("host_nominations")
+}
+
+// 欠席者を待たず、いまのメンバーだけで次へ進む申請（指名／提案の段階ごと）
+model AdvanceRequest {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String   @map("company_id")
+  stage     String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, stage])
+  @@index([companyId, stage])
+  @@map("advance_requests")
 }
 
 // 投票完了後、全員が申請すると提案と票を消して次のラウンドに戻す

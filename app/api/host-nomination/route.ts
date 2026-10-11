@@ -1,5 +1,5 @@
 import { nextAuthOptions } from "@/app/lib/auth";
-import { getCompanyStatusByEmail, leadingNomineeIds } from "@/app/lib/company-status";
+import { getCompanyStatusByEmail, tryAssignHost } from "@/app/lib/company-status";
 import prisma from "@/app/lib/prisma";
 import { bumpRoundSignal } from "@/app/lib/round-signal";
 import { getServerSession } from "next-auth";
@@ -47,25 +47,7 @@ export async function POST(req: Request) {
       update: { nomineeId },
     });
 
-    const nominations = await prisma.hostNomination.findMany({
-      where: { companyId: user.company.id },
-      select: { nomineeId: true },
-    });
-    const memberCount = user.company.users.length;
-    if (nominations.length === memberCount && memberCount > 0) {
-      const counts = new Map<string, number>();
-      for (const nomination of nominations) {
-        counts.set(nomination.nomineeId, (counts.get(nomination.nomineeId) ?? 0) + 1);
-      }
-      const { leaders } = leadingNomineeIds(counts);
-      if (leaders.length === 1) {
-        await prisma.company.update({
-          where: { id: user.company.id },
-          data: { hostId: leaders[0] },
-        });
-      }
-    }
-
+    await tryAssignHost(user.company.id, user.company.skipNominate);
     await bumpRoundSignal(user.company.id);
     const status = await getCompanyStatusByEmail(email);
     return NextResponse.json({ ok: true, status });

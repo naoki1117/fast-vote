@@ -3,13 +3,15 @@
 同じ会社のメンバーが提案を出し、**全員が出し終わってから**投票する Web アプリです。
 
 - 毎回 **ホストを指名** し、ホストが **お題** を出す
-- 提案は **1人1件**
+- 提案は **1人1件**（タイトル必須、内容は任意）
 - 投票は **同じ会社の全員が提出したあと** に開始
 - 投票は他の人の提案から **1件または2件**（自分の提案には投票できない。送信後は変更不可）
 - この回に提案したメンバー全員の削除申請でホスト・お題・提案・票・チャットを初期化する
 - 同じ会社の画面は **リロードなし** で進む（Supabase Realtime。定期ポーリングはしない）
 - 作業中に同じ会社のメンバーと **チャット** できる
 - ログアウトするとメンバー一覧からは外れるが、出した提案と入れた票は残る（アカウントも残る）
+- 欠席者を待たず、**いまのメンバーの半数以上** の申請で指名・提案から次へ進める
+- グループを抜ける場合は管理者（Naoki Kimura / jngmtpmdgaugad@gmail.com）へ連絡（画面下のプライバシーポリシー）
 - 新規登録で **氏名またはニックネーム** を入れ、ヘッダーのアイコン横に出す
 - ホーム画面に追加できる **PWA**（ブラウザの「アプリをインストール」／「ホーム画面に追加」）
 - タブ・PWA・ヘッダーのマークは同じ **FV** アイコン
@@ -156,10 +158,11 @@ Network タブで、失敗した応答の本文が JSON ではなく `An error o
 | 画面                | 内容                                                                             |
 | ------------------- | -------------------------------------------------------------------------------- |
 | 新規登録 / ログイン | 会社名・氏名またはニックネーム・メール・パスワードで参加。既存の会社名ならそこに入る |
-| ホスト・お題        | メンバーがホストを指名し、ホストがお題を出す                                     |
-| 自分の提案          | お題に沿って1件提出。提出後は得票を確認                                          |
+| ホスト・お題        | メンバーがホストを指名し、ホストがお題を出す。欠席時は半数以上で今のメンバーだけで進める |
+| 自分の提案          | お題に沿って1件提出（内容は任意）。提出後は得票を確認。半数以上で投票へ進めることも可 |
 | 提出状況            | 同じ会社の誰が提出・投票済みか                                                   |
-| 投票する            | 全員提出後に1件か2件選んで投票（送信後は変更不可）                               |
+| 投票する            | 提案が揃うか、半数以上で進めたあと、1件か2件選んで投票（送信後は変更不可）       |
+| プライバシー        | 画面下のリンク。抜ける場合は管理者 Naoki Kimura（jngmtpmdgaugad@gmail.com）へ連絡 |
 | 得票（上位5）       | 自社のランキング（同票は同じ順位）                                               |
 | チャット            | 同じ会社のメンバーと作業中に会話する（ダッシュボード右／狭い画面では折りたたみ） |
 
@@ -178,6 +181,8 @@ PostgreSQL（Supabase）。テーブル名は Prisma の `@@map` どおりです
 | host_id       | String? | UNIQUE, FK → users.id | 今ラウンドのホスト             |
 | topic_title   | String? |                       | ホストが出したお題             |
 | topic_content | String? |                       | お題の説明                     |
+| skip_nominate | Boolean | default false         | 半数以上の申請で指名を締め切る |
+| skip_propose  | Boolean | default false         | 半数以上の申請で提案を締め切る |
 
 ### users（参加者）
 
@@ -224,7 +229,19 @@ PostgreSQL（Supabase）。テーブル名は Prisma の `@@map` どおりです
 | company_id | String   | FK → companies.id     | 対象の会社           |
 | created_at | DateTime |                       | 指名日時             |
 
-全員が指名し、最多が1人に決まると `companies.host_id` に入ります。
+全員が指名し、最多が1人に決まると `companies.host_id` に入ります。欠席者がいる場合は、いまログイン中の半数以上が「今のメンバーで進める」と、すでに出ている指名だけでホストを決めます。
+
+### advance_requests（今のメンバーで進める）
+
+| カラム     | 型       | 制約                         | 意味                         |
+| ---------- | -------- | ---------------------------- | ---------------------------- |
+| id         | String   | PK                           | 申請 ID                      |
+| user_id    | String   | FK → users.id                | 申請した人                   |
+| company_id | String   | FK → companies.id            | 対象の会社                   |
+| stage      | String   | `nominate` または `propose`  | どの段階か                   |
+| created_at | DateTime |                              | 申請日時                     |
+
+同じ人が同じ段階で重複しない（`user_id` + `stage` がユニーク）。半数以上で `skip_nominate` / `skip_propose` が立ちます。
 
 ### reset_requests（削除申請）
 
@@ -267,6 +284,7 @@ erDiagram
   companies ||--o{ posts : "提案"
   companies ||--o{ host_nominations : "指名"
   companies ||--o{ reset_requests : "削除申請"
+  companies ||--o{ advance_requests : "欠席時の進行"
   companies ||--o| round_signals : "Realtime通知"
   companies ||--o{ messages : "チャット"
   users ||--o| posts : "提案は1件"
@@ -275,6 +293,7 @@ erDiagram
   users ||--o{ host_nominations : "指名する"
   users ||--o{ host_nominations : "指名される"
   users ||--o| reset_requests : "削除申請"
+  users ||--o{ advance_requests : "進行申請"
   posts ||--o{ votes : "得票"
 
   companies {
@@ -283,6 +302,8 @@ erDiagram
     string host_id FK
     string topic_title
     string topic_content
+    boolean skip_nominate
+    boolean skip_propose
   }
 
   users {
@@ -319,6 +340,13 @@ erDiagram
     string id PK
     string user_id UK
     string company_id FK
+  }
+
+  advance_requests {
+    string id PK
+    string user_id FK
+    string company_id FK
+    string stage
   }
 
   round_signals {

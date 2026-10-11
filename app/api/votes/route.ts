@@ -33,7 +33,7 @@ export const POST = async (req: Request) => {
     const companyStatus = await getCompanyStatusByEmail(email);
     if (!companyStatus?.votingOpen) {
       return NextResponse.json(
-        { error: "会社の全員が提案を提出するまで投票できません。" },
+        { error: "提案が揃うまで投票できません。" },
         { status: 403 }
       );
     }

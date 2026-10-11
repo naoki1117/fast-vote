@@ -3,6 +3,7 @@ import { Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import PwaRegister from "./components/PwaRegister";
+import SiteFooter from "./components/SiteFooter";
 import { AuthProvider } from "./lib/session-provider";
 
 // 日本語本文向けのフォント。latin サブセットで読み込みを抑える
@@ -53,6 +54,7 @@ export default function RootLayout({
           <div className="flex min-h-screen flex-col">
             <Header />
             <main className="flex-1">{children}</main>
+            <SiteFooter />
           </div>
         </AuthProvider>
       </body>

@@ -32,6 +32,13 @@ export type CompanyStatusPayload = {
   votingComplete: boolean;
   iHaveVoted: boolean;
   iRequestedReset: boolean;
+  iRequestedAdvanceNominate: boolean;
+  iRequestedAdvancePropose: boolean;
+  advanceNominateCount: number;
+  advanceProposeCount: number;
+  advanceNeededCount: number;
+  skipNominate: boolean;
+  skipPropose: boolean;
   iAmHost: boolean;
   myNomineeId: string | null;
   myVotedPostIds: string[];

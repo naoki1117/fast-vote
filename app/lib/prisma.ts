@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 // schema を変えたあと、開発サーバーが古い PrismaClient を使い続けるのを防ぐ番号。
 // 数字を上げるとグローバルに保持していたインスタンスを作り直す。
-const CLIENT_VERSION = 5;
+const CLIENT_VERSION = 6;
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
