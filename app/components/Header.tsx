@@ -38,17 +38,17 @@ const Header: FC = () => {
             <>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-3"
+                className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-2.5 sm:pr-3"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
                   {initial}
                 </span>
-                <span className="hidden min-w-0 sm:flex sm:flex-col">
-                  <span className="max-w-[12rem] truncate text-sm font-medium leading-tight text-slate-700">
+                <span className="min-w-0 flex flex-col">
+                  <span className="max-w-[7.5rem] truncate text-sm font-medium leading-tight text-slate-700 sm:max-w-[12rem]">
                     {name ?? "ログイン中"}
                   </span>
                   {companyName ? (
-                    <span className="max-w-[12rem] truncate text-xs leading-tight text-slate-400">
+                    <span className="hidden max-w-[12rem] truncate text-xs leading-tight text-slate-400 sm:block">
                       {companyName}
                     </span>
                   ) : null}

@@ -1,4 +1,4 @@
-const CACHE = "fast-vote-v1";
+const CACHE = "fast-vote-v2";
 const PRECACHE = ["/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {

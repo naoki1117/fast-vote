@@ -14,7 +14,9 @@ export default function AuthPanel() {
         <button
           type="button"
           className={`rounded-lg py-2 text-sm font-semibold transition ${
-            mode === "signin" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+            mode === "signin"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500"
           }`}
           onClick={() => setMode("signin")}
         >
@@ -23,7 +25,9 @@ export default function AuthPanel() {
         <button
           type="button"
           className={`rounded-lg py-2 text-sm font-semibold transition ${
-            mode === "signup" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+            mode === "signup"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500"
           }`}
           onClick={() => setMode("signup")}
         >
@@ -42,7 +46,9 @@ export default function AuthPanel() {
         <>
           <h2 className="text-xl font-semibold text-slate-900">新規登録</h2>
           <p className="mt-2 mb-6 text-sm text-slate-500">
-            同一の会社名で登録すると、同じ会社に所属します。パスワードは8文字以上です。
+            同一の会社名またはグループ名で登録すると、同じ会社またはグループに所属します。
+            <br />
+            パスワードは8文字以上です。
           </p>
           <SignUpForm />
         </>

@@ -6,14 +6,22 @@ import { NextResponse } from "next/server";
 /** 会社名・メール・パスワードでユーザーを作り、同じ会社名なら既存会社に参加する */
 export async function POST(req: Request) {
   try {
-    const { companyName, email, password } = await req.json();
+    const { companyName, name, email, password } = await req.json();
     const trimmedCompany = String(companyName ?? "").trim();
+    const trimmedName = String(name ?? "").trim();
     const trimmedEmail = String(email ?? "").trim().toLowerCase();
     const rawPassword = String(password ?? "");
 
-    if (!trimmedCompany || !trimmedEmail || !rawPassword) {
+    if (!trimmedCompany || !trimmedName || !trimmedEmail || !rawPassword) {
       return NextResponse.json(
-        { error: "会社名、メールアドレス、パスワードを入力してください。" },
+        { error: "会社名、氏名またはニックネーム、メールアドレス、パスワードを入力してください。" },
+        { status: 400 }
+      );
+    }
+
+    if (trimmedName.length > 40) {
+      return NextResponse.json(
+        { error: "氏名またはニックネームは40文字以内にしてください。" },
         { status: 400 }
       );
     }
@@ -48,8 +56,7 @@ export async function POST(req: Request) {
         data: {
           email: trimmedEmail,
           password: rawPassword,
-          // 表示名が未入力なので、メールの @ より前を仮の名前にする
-          name: trimmedEmail.split("@")[0],
+          name: trimmedName,
           companyId: company.id,
         },
       });

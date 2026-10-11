@@ -11,6 +11,7 @@ const inputClass =
 function SignUpForm() {
   const router = useRouter();
   const [companyName, setCompanyName] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -25,7 +26,7 @@ function SignUpForm() {
     const res = await fetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ companyName, email, password }),
+      body: JSON.stringify({ companyName, name, email, password }),
     });
     const data = await res.json();
 
@@ -57,8 +58,11 @@ function SignUpForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="companyName" className="mb-1.5 block text-sm font-medium text-slate-700">
-          会社名
+        <label
+          htmlFor="companyName"
+          className="mb-1.5 block text-sm font-medium text-slate-700"
+        >
+          会社名またはグループ名
         </label>
         <input
           id="companyName"
@@ -72,7 +76,29 @@ function SignUpForm() {
         />
       </div>
       <div>
-        <label htmlFor="signup-email" className="mb-1.5 block text-sm font-medium text-slate-700">
+        <label
+          htmlFor="signup-name"
+          className="mb-1.5 block text-sm font-medium text-slate-700"
+        >
+          氏名またはニックネーム
+        </label>
+        <input
+          id="signup-name"
+          type="text"
+          autoComplete="nickname"
+          required
+          maxLength={40}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className={inputClass}
+          placeholder="山田太郎"
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="signup-email"
+          className="mb-1.5 block text-sm font-medium text-slate-700"
+        >
           メールアドレス
         </label>
         <input
@@ -87,7 +113,10 @@ function SignUpForm() {
         />
       </div>
       <div>
-        <label htmlFor="signup-password" className="mb-1.5 block text-sm font-medium text-slate-700">
+        <label
+          htmlFor="signup-password"
+          className="mb-1.5 block text-sm font-medium text-slate-700"
+        >
           パスワード
         </label>
         <input
@@ -103,9 +132,15 @@ function SignUpForm() {
         />
       </div>
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {error}
+        </p>
       )}
-      <button type="submit" className="btn-primary w-full" disabled={submitting}>
+      <button
+        type="submit"
+        className="btn-primary w-full"
+        disabled={submitting}
+      >
         {submitting ? "登録中..." : "アカウントを作成"}
       </button>
     </form>
