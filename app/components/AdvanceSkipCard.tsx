@@ -28,7 +28,9 @@ export default function AdvanceSkipCard({
   }
 
   const count =
-    stage === "nominate" ? status.advanceNominateCount : status.advanceProposeCount;
+    stage === "nominate"
+      ? status.advanceNominateCount
+      : status.advanceProposeCount;
   const already =
     stage === "nominate"
       ? status.iRequestedAdvanceNominate
@@ -61,11 +63,7 @@ export default function AdvanceSkipCard({
       <p>
         欠席やグループを抜けた人がいて全員を待てないときは、いまログイン中のメンバーの
         <span className="font-semibold">半数以上</span>
-        が申請すると次へ進めます。グループを抜ける場合は管理者（{SITE_ADMIN.name} /{" "}
-        <a className="text-indigo-600 underline" href={`mailto:${SITE_ADMIN.email}`}>
-          {SITE_ADMIN.email}
-        </a>
-        ）へ連絡してください（
+        が申請すると次へ進めます。グループを抜ける場合はサイト管理者へ連絡してください（
         <a href="/privacy#leave" className="text-indigo-600 underline">
           プライバシーポリシー
         </a>
